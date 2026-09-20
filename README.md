@@ -1,140 +1,169 @@
-# Autonomous Accounting
+<p align="center">
+  <img src="docs/media/banner.png" alt="Autonomous Accounting — Receipts in. Reconciled books out. Self-hosted bookkeeping for a small Canadian corporation." width="100%">
+</p>
 
-Self-hosted bookkeeping for a small Canadian corporation. You give it receipts,
-invoices and bank statements; an LLM reads them, a multi-pass matcher reconciles the
-documents against the bank lines, a categorization agent assigns CRA/GIFI categories,
-and the result is a ledger you can export as an XLSX workbook, a PDF report, or an
-unencrypted audit binder with every source document attached.
+<p align="center">
+  <img alt="License: AGPL-3.0" src="https://img.shields.io/badge/license-AGPL--3.0-4338CA">
+  <img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11%2B-17705F">
+  <img alt="PostgreSQL 15+" src="https://img.shields.io/badge/postgres-15%2B-17705F">
+  <img alt="React 19" src="https://img.shields.io/badge/react-19-17705F">
+  <img alt="Hosting: your machine" src="https://img.shields.io/badge/hosting-your%20machine-1A1F4A">
+  <img alt="Telemetry: none" src="https://img.shields.io/badge/telemetry-none-1A1F4A">
+</p>
 
-Everything runs on one machine you own: PostgreSQL, the file store, the identity
-service and the web server. There is no account to create with anyone, no vendor to
-pay, and no copy of your books anywhere but your own disk.
+<p align="center">
+  <b><a href="#see-it-work">Watch the demo</a> &nbsp;·&nbsp; <a href="#quickstart">Quickstart</a> &nbsp;·&nbsp; <a href="#how-it-works">How it works</a> &nbsp;·&nbsp; <a href="docs/data-schema.md">Your data</a> &nbsp;·&nbsp; <a href="#go-deeper">Known issues</a></b>
+</p>
 
-## What it is
+**Autonomous Accounting turns a pile of receipts, invoices and bank statements into a
+reconciled, categorized ledger** — plus an audit binder with every source document
+attached. A vision LLM you choose reads the documents, a four-pass matcher pairs them with
+your bank lines, and anything it is not sure of is flagged for you instead of guessed.
+Everything runs on one machine you own: no account to create, no vendor to pay, no copy of
+your books anywhere but your own disk.
 
-- **Extraction** — receipts, invoices and PDF bank statements are rasterised and read by
-  a vision LLM into structured JSON (vendor, date, amount, tax, currency), totals
-  cross-checked against line items. Uploads are queued and answered `202`; a background
-  worker drains the queue, so dropping half a year of documents at once cannot time out
-  and a restart re-queues whatever was mid-flight.
-- **Reconciliation** — four passes over the unmatched set: strict same-currency, an
-  FX-relaxed pass inside a configurable band, an aggressive pass for splits and
-  installments, and an LLM pass that links across accounts. Bank fees, interest and
-  internal transfers are excluded rather than force-matched; anything uncertain is
-  flagged for review instead of guessed.
-- **Categorization** — a deterministic regex pre-pass (`config/category_rules.yaml`)
-  locks what it recognises, vendor clustering normalises descriptors, and only what is
-  left reaches the model, under a per-run call budget.
-- **Ledger and reports** — monthly and annual ledgers, a GST/HST/PST tax summary, a PDF
-  report, a QuickBooks-style and a Xero-style CSV, a shareable read-only link, and a ZIP
-  audit binder (XLSX workbook + `proof_of_transaction/` documents + a self-contained
-  HTML report). Amounts in different currencies are never summed into one total.
-- **Peer benchmarks** — an optional "reasonableness" pass compares your expense ratios
-  against published Canadian industry data and explains what stands out.
+## See it work
 
-## What it is not
+Three minutes: one invented company's January, from eight documents and a bank CSV to a
+downloadable audit binder.
 
-- **Not a hosted service.** Nothing to sign up for. You run it or it does not run.
-- **Not something you buy.** The software takes no payment. Every signed-in account has
-  full access to every feature.
-- **Not supported.** No warranty, no SLA, no security response commitment, no promise
-  that an upgrade will not want a manual migration. See the licence.
-- **Not a filing service.** It produces a ledger and reports for a Canadian small
-  corporation. It files nothing with the CRA and it is not accounting advice. Check the
-  numbers before you use them.
+<p align="center">
+  <img src="docs/media/demo-loop.gif" alt="The review queue: a USD invoice paired with a CAD bank line is flagged for a person, then approved." width="100%">
+</p>
 
-## Architecture
+<p align="center">
+  <a href="docs/media/demo.mp4">
+    <img src="docs/media/video-poster.png" alt="Play the full demo video: eight documents, one reconciled month (2 min 20 s)" width="72%">
+  </a>
+  <br>
+  <b><a href="docs/media/demo.mp4">▶ Watch the full demo (2:20, captioned, no sound)</a></b>
+</p>
 
-```
-upload / gather ─► extract (LLM) ─► reconcile ─► categorize ─► ledger + reports
-                        │               │            │              │
-                   queued jobs      4 passes    rules → LLM     XLSX / PDF /
-                   (SSE progress)                               CSV / ZIP binder
-```
+<!-- GitHub only plays a video inline from a user-attachments URL. To get an inline player here,
+     edit this file on github.com and drag docs/media/demo.mp4 onto this line. -->
 
-| Layer | What runs |
-|---|---|
-| API + web app | FastAPI on uvicorn, port `8080` by default; serves `/api/*` and the built SPA from one origin |
-| Database | PostgreSQL with row-level security keyed on the signed-in user |
-| File storage | A directory on local disk, served only through short-lived HMAC-signed URLs |
-| Frontend | React 19 + Vite + TypeScript, Tailwind, TanStack Query, Zustand |
-| Extraction | Any **OpenAI-compatible, vision-capable** endpoint you point `LLM_BASE_URL` at — vLLM, llama.cpp, Ollama's `/v1`, LM Studio. Gemini and OpenAI are optional fallbacks that stay inert while their keys are empty |
-| Auth | Local email + password (`server/local_auth.py`): HS256 access tokens, rotating refresh tokens, PBKDF2-HMAC-SHA256 hashes. Sign in with Google is optional |
+<sub>Everything shown is synthetic. `python scripts/gen_demo_data.py` writes the same month on
+your machine — see [Try the demo month](#try-the-demo-month).</sub>
 
-This project hosts no model of its own. If the endpoint is unreachable, extraction jobs
-park in `waiting_for_model` and resume by themselves; a direct upload returns HTTP 503
-and says so. Nothing silently falls back to a paid provider.
+## What you get
+
+| | | |
+|---|---|---|
+| <img src="docs/media/screenshot-review.png" alt="Review dialog: a CAD bank line beside the USD invoice it was matched to, with the exchange-rate explanation"> | <img src="docs/media/screenshot-ledger.png" alt="January 2026 ledger with categories and match status per bank line"> | <img src="docs/media/screenshot-binder.png" alt="The audit binder's self-contained HTML report"> |
+| **A review queue, not a black box.** Exact pairs approve themselves; date gaps and cross-currency pairs wait for you. | **A ledger with CRA/GIFI categories.** Monthly and annual, with a GST/HST/PST summary and QuickBooks- and Xero-style CSVs. | **An audit binder in one ZIP.** The XLSX workbook, a self-contained HTML report, and the document behind every line. |
+
+## How it works
+
+<p align="center">
+  <img src="docs/media/pipeline.png" alt="Upload, extract, reconcile, categorize, report. Anything uncertain lands in Review." width="100%">
+</p>
+
+- **Extraction.** Receipts, invoices and PDF bank statements are rasterised and read by a
+  vision LLM into structured JSON (vendor, date, amount, tax, currency), with totals
+  cross-checked against line items. Uploads queue and answer `202`; a background worker
+  drains the queue, so dropping half a year of documents at once cannot time out, and a
+  restart re-queues whatever was mid-flight.
+- **Reconciliation.** Four passes over the unmatched set: strict same-currency, FX-relaxed
+  inside a configurable band, an aggressive pass for splits and installments, and an LLM
+  pass that links across accounts.
+- **Categorization.** A deterministic regex pre-pass (`config/category_rules.yaml`) locks
+  what it recognises, vendor clustering normalises descriptors, and only the remainder
+  reaches the model, under a per-run call budget.
+- **Reports.** Monthly and annual ledgers, a GST/HST/PST tax summary, a PDF report,
+  QuickBooks- and Xero-style CSVs, a shareable read-only link, the ZIP audit binder — and an
+  optional "reasonableness" pass that compares your expense ratios against published
+  Canadian industry data.
+
+## Rules it does not break
+
+- **It flags; it does not guess.** A wrong number in a tax filing is worse than a blank.
+  Bank fees, interest and internal transfers are excluded rather than force-matched.
+- **It never sums across currencies.** A USD invoice paid in CAD is an FX match for review,
+  never an "exact" one.
+- **Your documents go only where you point them.** Set `LLM_BASE_URL` to a server on your own
+  machine or LAN and nothing leaves. An empty provider key means *off*; nothing silently
+  falls back to a paid provider, and `GET /health` shows where an upload would go. If the
+  endpoint is unreachable, jobs park in `waiting_for_model` and resume by themselves.
+- **No telemetry, no analytics, no webfonts.** Loading a page fetches nothing from anyone
+  else. The log files on your disk are the only record.
+- **Row-level security on every table**, keyed on the signed-in user and enforced from the
+  catalogue by a test.
+
+The long form — backups, encryption at rest, what reaches a model — is in
+[Honesty about data](docs/data-handling.md).
 
 ## Quickstart
 
-Prerequisites: **Python 3.11+**, **Node 20+**, **PostgreSQL 15+** reachable on loopback,
-and an OpenAI-compatible vision LLM endpoint. (Nothing in `db/` needs a server feature
-newer than PostgreSQL 13; 15 is just the oldest release still maintained upstream.)
+You need **Python 3.11+**, **Node 20+**, **PostgreSQL 15+** on loopback, and any
+OpenAI-compatible, vision-capable endpoint — vLLM, llama.cpp, Ollama's `/v1`, LM Studio.
+This project hosts no model of its own.
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate            # Windows: .venv\Scripts\activate
+python -m venv .venv && . .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+cp .env.example .env                            # then fill in the three values it names
 
-cp .env.example .env            # Windows: copy .env.example .env
+createdb autonomous_accounting                  # the order below is not interchangeable
+psql -d autonomous_accounting -f db/local_auth_schema.sql
+psql -d autonomous_accounting -f db/schema_pg.sql
+python -m db.migrate
+psql -d autonomous_accounting -f db/local_grants.sql
+
+npm --prefix web ci && npm --prefix web run build
+python -m uvicorn server.app:app --port 8080    # then open http://localhost:8080
 ```
 
-Fill in three values in `.env`. Generate each secret exactly as `.env.example` says:
+Registration is closed by default. Set `AUTH_ALLOW_SIGNUP=1`, restart, sign up, then set it
+back to `0`. `GET /health` reports database, storage and LLM reachability.
+
+<details>
+<summary><b>The three <code>.env</code> values, and how to generate the secrets</b></summary>
+
+Generate each secret exactly as `.env.example` says:
 
 ```bash
 python -c "import secrets;print(secrets.token_urlsafe(48))"   # AUTH_JWT_SECRET
 python -c "import secrets;print(secrets.token_urlsafe(48))"   # STORAGE_URL_SECRET
 ```
 
-and set `DATABASE_URL` to the database you are about to create.
+and set `DATABASE_URL` to the database you are about to create. Every other variable, with
+its default, is in `.env.example`. `AUTH_AUTOCONFIRM=1` (the default) means a new account
+works immediately without any mail transport.
 
-Create the database and lay down the schema **in this order** — it is not
-interchangeable:
+</details>
 
-```bash
-createdb autonomous_accounting
-psql -d autonomous_accounting -f db/local_auth_schema.sql
-psql -d autonomous_accounting -f db/schema_pg.sql
-python -m db.migrate
-psql -d autonomous_accounting -f db/local_grants.sql
-```
+<details>
+<summary><b>Why the schema files run in that order</b></summary>
 
-`local_auth_schema.sql` must run first: it creates the `auth` schema, `auth.uid()` and
-the `authenticated` role, all of which `schema_pg.sql` needs. `schema_pg.sql` is the
-whole schema — every table, index, trigger and row-level-security policy — as a single
-baseline; `db/migrations/` ships empty and `python -m db.migrate` therefore has nothing
-to do on a fresh install, but run it anyway so anything added after the baseline is
-picked up. `local_grants.sql` must run last: it grants on the tables the steps above
-created, and without it every query fails with *permission denied*.
+`local_auth_schema.sql` must run first: it creates the `auth` schema, `auth.uid()` and the
+`authenticated` role, all of which `schema_pg.sql` needs. `schema_pg.sql` is the whole
+schema — every table, index, trigger and row-level-security policy — as a single baseline;
+`db/migrations/` ships empty and `python -m db.migrate` therefore has nothing to do on a
+fresh install, but run it anyway so anything added after the baseline is picked up.
+`local_grants.sql` must run last: it grants on the tables the steps above created, and
+without it every query fails with *permission denied*. Each step is idempotent, so
+re-running the sequence on an existing database changes nothing. (Nothing in `db/` needs a
+server feature newer than PostgreSQL 13; 15 is just the oldest release still maintained
+upstream.)
 
-Each step is idempotent, so re-running the sequence on an existing database changes
-nothing.
+</details>
 
-Run the backend from the repo root:
+<details>
+<summary><b>Developing the frontend with the Vite dev server</b></summary>
 
-```bash
-python -m uvicorn server.app:app --port 8080
-```
-
-Then build the frontend — FastAPI serves the bundle from the same origin — or start the
-Vite dev server, which proxies `/api` to the backend:
+FastAPI serves the built bundle from the same origin. For frontend work, run the Vite dev
+server instead, which proxies `/api` to the backend:
 
 ```bash
 cd web
 npm ci
-npm run build          # production bundle into web/dist
-npm run dev            # …or the dev server, on http://localhost:5174
+npm run dev            # http://localhost:5174
 ```
 
-`GET /health` on the backend reports database, storage and LLM reachability.
+</details>
 
-**Creating the first account.** Registration is closed by default
-(`AUTH_ALLOW_SIGNUP=0`) so that an install on your own machine is not an open invitation
-to fill your disk. Set `AUTH_ALLOW_SIGNUP=1`, restart, sign up in the browser, then set
-it back to `0`. `AUTH_AUTOCONFIRM=1` (the default) means the account works immediately
-without any mail transport.
-
-### Peer-benchmark data (optional, one command)
+<details>
+<summary><b>Peer-benchmark data (optional, one command)</b></summary>
 
 The reasonableness engine needs a benchmark table, which is **not** committed:
 
@@ -143,162 +172,100 @@ python scripts/ingest_ised_benchmarks.py --year 2024 --out config/ised_benchmark
 ```
 
 That downloads the Financial Performance Data CSVs published by Innovation, Science and
-Economic Development Canada on the Government of Canada Open Government Portal,
-normalises them into per-industry cohort cells, validates them fail-loud, and writes a
-large JSON file that `.gitignore` excludes. The data is licensed under the
-**Open Government Licence – Canada**; the generated file and every report built from it
-carry the attribution the licence requires. No Open Government Licence data file is
-distributed with this repository — you build the table yourself. See `NOTICE`.
+Economic Development Canada on the Government of Canada Open Government Portal, normalises
+them into per-industry cohort cells, validates them fail-loud, and writes a large JSON file
+that `.gitignore` excludes. The data is licensed under the **Open Government Licence –
+Canada**; the generated file and every report built from it carry the attribution the
+licence requires. No Open Government Licence data file is distributed with this repository
+— you build the table yourself. See `NOTICE`.
 
 Every run validates structure and plausibility. `--anchor anchor.json` adds an optional
 check that one named cell still carries the figures you expect, so a refresh that quietly
 changes what a cell means aborts instead of overwriting your table; with no anchor
 supplied, no cell-specific figures are demanded.
 
-`--seed-only` writes a small table of invented example figures instead, with no download
-— enough for the engine and its tests to run, and labelled in its own `meta` as not being
+`--seed-only` writes a small table of invented example figures instead, with no download —
+enough for the engine and its tests to run, and labelled in its own `meta` as not being
 industry data. Skip the step entirely and the feature stays off; nothing else is affected.
 
-## Bring your own data
+</details>
 
-Nothing in this repository contains anyone's real books. The schema you need in order to
-point it at yours is written down in **[`docs/data-schema.md`](docs/data-schema.md)**:
-every editable data file, the transaction/document/match/ledger record shapes and their
-status vocabularies, the fixed category taxonomy, and the minimum CSV the bank parser
-accepts.
+## Try the demo month
 
-**Config files you are expected to edit** — six YAML files, all shipped with generic
-example defaults. Five degrade to an empty table with a warning rather than failing to
-start; `aa_category_gifi_map.yaml` is opened directly, so it must be present or
-`GIFI_MAPPING_PATH` must point somewhere that is:
-
-| File | What it holds | Loaded by |
-|---|---|---|
-| `config/accounts.yaml` | account keys → display names, and the order sections appear in reports | `config/data_files.py` |
-| `config/category_rules.yaml` | the deterministic regex pre-pass: pattern → category, plus non-reconcilable flags | `config/data_files.py` |
-| `config/vendor_aliases.yaml` | descriptor regex → stable vendor key, so one merchant is one vendor | `config/data_files.py` |
-| `config/transfer_keywords.yaml` | descriptor regex → transfer type, side and valid account types, for cross-statement linking | `core/transaction_linker.py` |
-| `config/vendor_rules.yaml` | your own clients and vendors: vendor pattern → category, priority, USD-billing hints | `core/reconciliation.py` (`_known_vendor_patterns`, reads the file directly), **not** through `data_files.py` |
-| `config/aa_category_gifi_map.yaml` | category → GIFI/industry-benchmark bucket, for the reasonableness pass | path from `GIFI_MAPPING_PATH` |
-
-**Ingest routes.** Statements arrive through `POST /api/transactions/upload-statement`
-(CSV/XLSX parse deterministically; PDF goes through the institution-agnostic LLM parser).
-Receipts arrive through `POST /api/receipts/upload`. Gmail, PayPal and Wise are optional
-gather integrations that stay hidden until you configure credentials. The CSV signatures
-the parser recognises, and the five columns a hand-made CSV needs, are in
-`docs/data-schema.md`.
-
-**Built-in statement parsers:** BMO chequing and credit-card CSV/PDF exports, Wise,
-PayPal, Amazon; every other institution goes through the generic LLM statement parser,
-which reads whatever the statement prints. The built-in parsers key on the header row of
-a CSV and on the descriptor grammar a format uses, so they need no configuration; the
-LLM path needs no format knowledge at all.
-
-**What the synthetic fixtures do and do not exercise.** The fixtures under
-`tests/fixtures/` are generated, deterministic and small. They exist so the suite runs
-end to end — parse, match, categorise, export — with no network, no LLM endpoint and
-nobody's real books. They do not prove the engine against reality. They do not cover:
-
-- **Scale.** Hundreds of rows, not the tens of thousands a few years of books produce.
-  Matcher cost is superlinear in the candidate set.
-- **Real bank-descriptor variety.** Every institution mangles merchant names
-  differently — truncation, acquirer city tags, reference numbers, different casing per
-  channel. The fixtures use a handful of clean shapes.
-- **Real document layouts.** Generated PDFs are clean and typeset. Phone photos, faint
-  thermal receipts, multi-page invoices with continuation pages and scanned statements
-  are where extraction actually gets hard.
-- **Non-Canadian tax.** GST/HST/PST and the ISED/GIFI taxonomy are wired in throughout.
-  VAT, sales tax and any other regime are not modelled.
-
-Expect to tune the rule files above and the reconciliation thresholds in `.env` against
-your own statements before the output is trustworthy.
-
-## Honesty about data
-
-- **Everything sits on the machine you run it on** — database, uploaded documents,
-  exports, logs. No replica, no point-in-time recovery, no managed anything.
-- **No encryption at rest beyond what your OS gives you.** Stored integration
-  credentials are encrypted with a key derived from your own secrets; the database files
-  and the uploaded documents are not. Whole-disk encryption is your job.
-- **Back it up yourself.** This is the only copy of your books; losing the disk loses the
-  data. `scripts/local/backup-aa.ps1` is a `pg_dump`-plus-storage wrapper, and it writes
-  to the same machine unless you point it elsewhere. It also copies `.env` into the
-  backup as `env.txt`, in clear text, because a database restored without
-  `AUTH_JWT_SECRET`, `STORAGE_URL_SECRET` and `CREDENTIAL_ENCRYPTION_SECRET` is not a
-  restore. That makes the backup folder as sensitive as `.env` itself — restrict it,
-  and do not sync it anywhere you would not put `.env`.
-- **Your documents reach a model.** Prompts and page images go wherever `LLM_BASE_URL`
-  points. Point it at a server on your own machine or LAN and nothing leaves; point it at
-  a remote provider, or fill in `GEMINI_API_KEY` / `OPENAI_API_KEY`, and your financial
-  documents are sent to that provider under their terms.
-  An empty value in `.env` means **off**, even when the shell that starts the server
-  exports that key: `.env` is loaded with `override=True` precisely so a stray
-  `OPENAI_API_KEY` in your environment cannot quietly send your documents to a paid
-  provider. `GET /health` shows which provider an upload would actually reach.
-- **No outbound request from the browser.** The app ships no webfonts and renders in the
-  system font stack, so loading a page fetches nothing from anyone else, and the
-  Content-Security-Policy allows no external origin except Google's: its OAuth endpoint,
-  reached only if you sign in with Google, and `*.googleusercontent.com` images, fetched
-  only to show the profile picture of an account created that way. There is no analytics, error-tracking or
-  telemetry SDK anywhere in this project — the log files on your disk are the only record
-  of what happened.
-
-## Known issues
-
-Open engineering items that are not visible to a user are tracked in
-[`docs/backlog.md`](docs/backlog.md).
-
-Things a stranger will meet, written down rather than quietly left for them to find.
-None of them loses data; all of them are cosmetic unless the entry says otherwise.
-
-- **`pytest.ini` excludes eleven test files and thirteen more classes or tests.** They
-  assert a contract the code does not have — imports that are gone, renamed database
-  methods, a different column order — and are excluded from collection rather than
-  deleted. The header of `pytest.ini` says so; nobody should add new tests to those
-  files. What that costs in coverage is small but real:
-  `pytest --cov=core.ledger --cov=core.html_binder` reports 85% for `core/ledger.py` and
-  91% for `core/html_binder.py`, and the uncovered lines in `core/ledger.py` are mostly
-  its accounting-package exports.
-- **Gmail's OAuth redirect has to match what you registered.** The redirect the code
-  builds is `<BASE_URL>/api/onboarding/gmail/callback`, and `BASE_URL` defaults to
-  `http://localhost:8080`. If you serve the app anywhere else, set `BASE_URL` (or
-  `GMAIL_REDIRECT_URI`) before connecting Gmail, and register the same value with
-  Google.
-
-## Testing
+The files under `tests/fixtures/` are per-parser unit fixtures; uploaded through the UI they
+match nothing, because no receipt among them belongs to any bank line. To see the whole
+pipeline work, generate a coherent synthetic month instead:
 
 ```bash
-pytest                                        # from the repo root
-ruff check .
-cd web && npm run typecheck && npm run build
+python scripts/gen_demo_data.py          # writes data/demo/, which is gitignored
 ```
 
-`scripts/gates.sh` runs all four in one go. There is no CI; these are the checks.
+That writes one invented company's January 2026 — a 12-row CAD statement in the built-in
+CSV layout, seven PDFs and one PNG — plus a `README.txt` saying what each file is there to
+show. Then, in the app:
 
-**What `pytest` does about the database.** It needs PostgreSQL and a disposable
-database, and it arranges both itself. It takes `DATABASE_URL` from your shell, or —
-if the shell does not have one — parses it out of `.env`, and then runs against a
-`_test` sibling of that database: `autonomous_accounting` becomes
-`autonomous_accounting_test`. It creates that database if it does not exist, using the
-same host, port and credentials, and lays down `local_auth_schema.sql`,
-`schema_pg.sql`, any migrations and `local_grants.sql` in the Quickstart's order. It
-never connects to the database named in `DATABASE_URL` itself, so it cannot touch your
-books. Set `TEST_DATABASE_URL` to point somewhere else entirely; either way the
-resolved name must end in `_test` or the suite refuses to start. If PostgreSQL is not
-running at all, the tests that need it skip themselves and the rest still run.
+1. Set `OWN_COMPANY_PATTERNS=example corp` in `.env` and restart, so the invoice *issued
+   by* the demo company is read as income and can match the incoming wire.
+2. Sign up, choose **Manitoba** as the province (the demo documents charge GST and RST),
+   and upload `demo_bank_cad.csv` as the statement.
+3. Upload all eight documents at once. They queue; each takes roughly a minute on a
+   27B-class local vision model, less on a hosted one.
+4. Press **Match Receipts**. Expect exact same-day pairs to be auto-approved without a
+   model call, a six-day date gap and a USD invoice paid in CAD to land in **Review**, the
+   monthly fee, interest and inter-account transfer to be marked as needing no receipt,
+   two bank lines left asking for a document, and a cash receipt left unmatched.
+5. Approve the pending pairs in **Review**, then download the audit binder from
+   **Reports → January 2026** and open `proof_of_transaction/` and `index.html`.
 
-`.env` is read for that one value and otherwise **not** applied to the test process:
-the suite sets its own environment, so a run does not depend on how your install
-happens to be configured.
+What that run looks like on one model is written up under *Verification gaps* in
+`docs/backlog.md`, next to the defects it found.
 
-Every fixture the suite reads is synthetic and generated — see `tests/fixtures/README.md`
-and `scripts/gen_fixtures.py`. No real financial document or real book belongs in this
-repository, in a test or anywhere else.
+## What it is not
+
+- **Not a hosted service.** Nothing to sign up for. You run it or it does not run.
+- **Not something you buy.** The software takes no payment. Every signed-in account has
+  full access to every feature.
+- **Not supported.** No warranty, no SLA, no security response commitment, no promise that
+  an upgrade will not want a manual migration. See the licence.
+- **Not a filing service.** It produces a ledger and reports for a Canadian small
+  corporation, and models GST/HST/PST only. It files nothing with the CRA and it is not
+  accounting advice. Check the numbers before you use them.
+
+## Architecture
+
+| Layer | What runs |
+|---|---|
+| API + web app | FastAPI on uvicorn, port `8080` by default; serves `/api/*` and the built SPA from one origin |
+| Database | PostgreSQL with row-level security keyed on the signed-in user |
+| File storage | A directory on local disk, served only through short-lived HMAC-signed URLs |
+| Frontend | React 19 + Vite + TypeScript, Tailwind, TanStack Query, Zustand |
+| Extraction | Any **OpenAI-compatible, vision-capable** endpoint you point `LLM_BASE_URL` at. Gemini and OpenAI are optional fallbacks that stay inert while their keys are empty |
+| Auth | Local email + password (`server/local_auth.py`): HS256 access tokens, rotating refresh tokens, PBKDF2-HMAC-SHA256 hashes. Sign in with Google is optional |
+
+## Go deeper
+
+| | |
+|---|---|
+| [**Bring your own data**](docs/data-schema.md) | The six YAML tables under `config/` you are expected to edit, every record shape and status vocabulary, the built-in bank parsers (BMO, Wise, PayPal, Amazon; everything else goes through the LLM statement parser), and the minimum CSV a hand-made statement needs |
+| [**Honesty about data**](docs/data-handling.md) | Where everything sits, what is and is not encrypted, backups, what reaches a model |
+| [**Known issues**](docs/backlog.md) | Open engineering items. Read *Security hardening* before exposing an instance beyond loopback: the defaults — one owner, loopback only, registration closed — are what this was reviewed for |
+| [**Testing**](docs/testing.md) | `./scripts/gates.sh` runs ruff, pytest, typecheck and build — there is no CI. How `pytest` isolates its database, and what the synthetic fixtures do not prove |
+| [**Working on it with a coding agent**](.claude/README.md) | `CLAUDE.md` and `AGENTS.md` are the entry points; `.claude/` is an optional Claude Code harness that denies agent reads of `.env`, `data/` and `logs/`. Nothing in the application depends on it |
+
+One thing a stranger will meet early: **Gmail's OAuth redirect has to match what you
+registered.** The code builds `<BASE_URL>/api/onboarding/gmail/callback`, and `BASE_URL`
+defaults to `http://localhost:8080`. If you serve the app anywhere else, set `BASE_URL` (or
+`GMAIL_REDIRECT_URI`) before connecting Gmail, and register the same value with Google.
+Gmail, PayPal and Wise gather integrations stay hidden until you configure credentials.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md): synthetic fixtures only, `ruff` and `tsc` clean,
-one topic per pull request, sign off your commits (`git commit -s`).
+See [CONTRIBUTING.md](CONTRIBUTING.md): synthetic fixtures only, `ruff` and `tsc` clean, one
+topic per pull request, sign off your commits (`git commit -s`). The most useful
+contribution is a statement parser or a category rule for a layout the engine does not read
+yet — built from invented data, never real books.
+
+If this saved you a bookkeeping afternoon, a star helps the next small-business owner find it.
 
 ## Licence
 
