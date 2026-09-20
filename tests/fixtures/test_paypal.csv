@@ -1,0 +1,6 @@
+"Date","Time","TimeZone","Name","Type","Status","Currency","Gross","Fee","Net","Subject","Transaction ID"
+"01/10/2026","12:15:00","UTC","Orchid Telecom","Website Payment","Completed","USD","-74.20","0.00","-74.20","Business line - January","PP-0000-0001"
+"01/18/2026","09:42:00","UTC","Bluepeak Software Inc","Subscription Payment","Completed","USD","-129.00","0.00","-129.00","Team plan - January","PP-0000-0002"
+"01/22/2026","14:05:00","UTC","Northwind Trading","Express Checkout Payment","Completed","USD","640.00","-18.56","621.44","Invoice INV-2026-0007","PP-0000-0003"
+"01/24/2026","14:06:00","UTC","","General Currency Conversion","Completed","USD","-640.00","0.00","-640.00","Conversion to CAD","PP-0000-0004"
+"01/27/2026","08:30:00","UTC","Example Retailer","Website Payment","Pending","USD","-41.30","0.00","-41.30","Awaiting clearance","PP-0000-0005"

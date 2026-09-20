@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- No webfont links: the font stacks in src/index.css use what the
+         platform already ships, so loading a page contacts no third party. -->
+    <title>Autonomous Accounting — private, self-hosted bookkeeping</title>
+    <meta name="description" content="Self-hosted double-entry bookkeeping with LLM document extraction and bank reconciliation." />
+    <meta property="og:title" content="Autonomous Accounting — private, self-hosted bookkeeping" />
+    <meta property="og:description" content="Self-hosted double-entry bookkeeping with LLM document extraction and bank reconciliation." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Autonomous Accounting" />
+    <meta property="og:locale" content="en_CA" />
+    <meta name="twitter:title" content="Autonomous Accounting — private, self-hosted bookkeeping" />
+    <meta name="twitter:description" content="Self-hosted double-entry bookkeeping with LLM document extraction and bank reconciliation." />
+    <meta name="author" content="Autonomous Accounting" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0f172a" />
+    <!-- CSP is enforced via HTTP headers from the server (server/app.py), not here.
+         A <meta> CSP breaks dev mode where the Vite dev server (port 5174) and the
+         API server (port 8080) are on different origins — 'self' doesn't cover
+         cross-port requests, so every fetch to /api/* gets blocked. -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

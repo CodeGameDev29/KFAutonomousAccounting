@@ -1,0 +1,34 @@
+# Line endings.
+#
+# Source files are normalised to LF in the repository and checked out with the
+# platform's convention, as usual. Two exceptions matter here:
+#
+#  * Real binaries (PDF, images, spreadsheets, fonts) must never have their
+#    bytes rewritten. Git's own auto-detection is not enough on Windows, where
+#    a clone with core.autocrlf=true inserted carriage returns into the
+#    generated PDF fixtures — which both corrupts them and makes a freshly
+#    cloned tree look dirty the moment `python scripts/gen_fixtures.py` runs.
+#
+#  * Everything under tests/fixtures/ is byte-exact by design. The generator
+#    writes those files, and the checked-in copies must be what it writes, so
+#    that regenerating on a fresh clone leaves `git status` clean. That
+#    includes the CSVs, whose CRLF row endings are the format, not a platform
+#    artefact.
+* text=auto
+
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.xlsx  binary
+*.xls   binary
+*.zip   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.otf   binary
+
+tests/fixtures/** -text

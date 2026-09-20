@@ -1,0 +1,320 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* "Quiet Accountant Who Breathes" — Calm, warm, alive */
+    /* Primary: Warm Indigo — reliable, calm, capable */
+    --background: 50 33% 98%;          /* #FAFAF8 warm off-white */
+    --foreground: 36 8% 20%;           /* rgba(55,53,47,0.95) Notion-style warm near-black */
+    --card: 0 0% 100%;                 /* #FFFFFF white */
+    --card-foreground: 36 8% 20%;      /* warm near-black */
+    --popover: 0 0% 100%;
+    --popover-foreground: 36 8% 20%;
+    --primary: 245 75% 51%;            /* #4338CA warm indigo */
+    --primary-foreground: 0 0% 100%;   /* white */
+    --secondary: 48 30% 95%;           /* warm cream */
+    --secondary-foreground: 36 8% 20%;
+    --muted: 45 20% 95%;               /* warm light gray */
+    --muted-foreground: 30 5% 47%;     /* warm gray — Notion-inspired */
+    --surface-warm: 42 35% 97%;        /* warm cream surface */
+    --accent: 36 83% 44%;              /* #D97706 amber */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 343 81% 53%;        /* #E11D48 rose */
+    --destructive-foreground: 0 0% 100%;
+    --success: 131 15% 49%;            /* #6B8F71 sage green */
+    --border: 40 15% 90%;              /* warm border */
+    --input: 40 15% 88%;               /* warm input border */
+    --ring: 245 75% 51%;               /* indigo ring */
+    --primary-hover: 245 75% 39%;      /* #3730A3 darker indigo */
+    --indigo-50: 226 100% 97%;         /* #EEF2FF */
+    --gray-300: 220 13% 83%;           /* #D1D5DB */
+    --radius: 0.625rem;
+
+    /* Chart colors — warm palette */
+    --chart-1: 245 75% 51%;            /* indigo */
+    --chart-2: 131 15% 49%;            /* sage green */
+    --chart-3: 36 83% 44%;             /* amber */
+    --chart-4: 343 81% 53%;            /* rose */
+    --chart-5: 217 91% 60%;            /* blue */
+
+    /* Sidebar — light, blends with page */
+    --sidebar-background: 50 33% 98%;  /* #FAFAF8 same as page */
+    --sidebar-foreground: 218 14% 26%; /* #374151 gray 700 */
+    --sidebar-primary: 245 75% 51%;    /* warm indigo */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 226 100% 97%;    /* #EEF2FF indigo 50 */
+    --sidebar-accent-foreground: 245 75% 51%;
+    --sidebar-border: 40 15% 90%;      /* #E5E5E0 warm border */
+    --sidebar-ring: 245 75% 51%;       /* indigo */
+    --sidebar-muted-foreground: 218 11% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* System fonts only.
+     ------------------
+     The stacks below name the humanist sans and the monospace each platform
+     already ships, so rendering a page fetches no webfont and contacts no
+     third party. To use a specific typeface, self-host it and put it at the
+     front of these stacks. */
+  body {
+    @apply text-foreground;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(42 35% 97%) 100%);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  /* Monospace for financial numbers — tabular-nums for aligned columns. */
+  .font-mono {
+    font-family: ui-monospace, 'SFMono-Regular', 'Cascadia Mono', 'Segoe UI Mono', 'Roboto Mono', Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Multi-layer warm shadows — Notion-inspired depth */
+  .shadow-warm-sm {
+    box-shadow:
+      0 1px 2px rgba(55, 53, 47, 0.04),
+      0 0 0 1px rgba(55, 53, 47, 0.03);
+  }
+
+  .shadow-warm {
+    box-shadow:
+      0 1px 2px rgba(55, 53, 47, 0.04),
+      0 2px 4px rgba(55, 53, 47, 0.04),
+      0 0 0 1px rgba(55, 53, 47, 0.03);
+  }
+
+  .shadow-warm-md {
+    box-shadow:
+      0 2px 4px rgba(55, 53, 47, 0.04),
+      0 4px 8px rgba(55, 53, 47, 0.06),
+      0 0 0 1px rgba(55, 53, 47, 0.03);
+  }
+
+  .shadow-warm-lg {
+    box-shadow:
+      0 4px 8px rgba(55, 53, 47, 0.04),
+      0 8px 16px rgba(55, 53, 47, 0.06),
+      0 16px 32px rgba(55, 53, 47, 0.04);
+  }
+
+  /* Card hover lift — warm multi-layer shadow on hover */
+  .card-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 4px rgba(55, 53, 47, 0.04),
+      0 4px 12px rgba(55, 53, 47, 0.06),
+      0 0 0 1px rgba(55, 53, 47, 0.03);
+  }
+
+  /* Shimmer skeleton loading animation */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Simple fade-in — opacity only, no translateY */
+  .fade-in-up {
+    opacity: 0;
+    transition: opacity 0.4s ease-out;
+  }
+  .fade-in-up.visible {
+    opacity: 1;
+  }
+
+  /* Accent left-border for dashboard cards */
+  .accent-border-left {
+    border-left: 3px solid hsl(var(--primary));
+  }
+
+  .accent-border-amber {
+    border-left: 3px solid hsl(var(--accent));
+  }
+}
+
+@layer utilities {
+  /* The body must never scroll sideways.
+     ------------------------------------
+     On a phone-width viewport the document could be dragged several times
+     wider than the screen: the app shell's <main> is a flex item, flex items
+     default to min-width:auto, and so <main> grew to the min-content width of
+     the widest thing on the page (a wide table, a Recharts wrapper) and took
+     the document with it. `.app-main` fixes that at the shell:
+     min-width:0 lets <main> shrink to the viewport, and overflow-x:clip stops
+     anything inside from extending the document's scroll width. `clip` rather
+     than `hidden` on purpose — `hidden` would turn <main> into a scroll
+     container and move the page's vertical scrolling inside it.
+
+     Wide content then scrolls in its own box instead: `.hscroll` is that box,
+     and every table/chart wrapper that can exceed the viewport should carry it
+     (it is also what makes an existing `overflow-x:auto` wrapper actually
+     become the scrolling element, which it was not while its parent could
+     stretch). */
+  .app-main {
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  .hscroll {
+    min-width: 0;
+    overflow-x: auto;
+  }
+
+  /* Focus styles — indigo ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    ring-color: hsl(var(--ring));
+    ring-offset-color: hsl(var(--background));
+  }
+
+  /* Smooth transitions on interactive elements */
+  button, a, input, select, textarea,
+  [role="button"], [tabindex] {
+    @apply transition-colors duration-150 ease-in-out;
+  }
+}
+
+/* Custom scrollbar — thin, indigo tint */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.3) hsl(var(--muted));
+}
+
+/* Save success toast — fade in, hold, fade out */
+@keyframes save-toast {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  75% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(2px); }
+}
+.save-toast {
+  animation: save-toast 3s ease-out forwards;
+}
+
+/*
+  Linked-transaction highlight.
+  Applied directly to <td> children because tables use border-collapse: collapse
+  (Tailwind preflight), and inset box-shadows + background on <tr> render
+  unreliably across Chrome/Safari. Targeting the TDs dodges the issue entirely.
+*/
+@keyframes row-highlight-pulse-bg {
+  0%, 100% { background-color: hsl(245 75% 51% / 0.32); }
+  50%      { background-color: hsl(245 75% 51% / 0.58); }
+}
+
+@keyframes row-highlight-pulse-outline-top {
+  0%, 100% { box-shadow: inset 0 3px 0 hsl(245 75% 51% / 0.7); }
+  50%      { box-shadow: inset 0 3px 0 hsl(245 75% 51%); }
+}
+@keyframes row-highlight-pulse-outline-bottom {
+  0%, 100% { box-shadow: inset 0 -3px 0 hsl(245 75% 51% / 0.7); }
+  50%      { box-shadow: inset 0 -3px 0 hsl(245 75% 51%); }
+}
+@keyframes row-highlight-pulse-left-stripe {
+  0%, 100% {
+    box-shadow:
+      inset 6px 0 0 hsl(245 75% 51%),
+      inset 0 3px 0 hsl(245 75% 51% / 0.7),
+      inset 0 -3px 0 hsl(245 75% 51% / 0.7);
+  }
+  50% {
+    box-shadow:
+      inset 6px 0 0 hsl(245 75% 51%),
+      inset 0 3px 0 hsl(245 75% 51%),
+      inset 0 -3px 0 hsl(245 75% 51%);
+  }
+}
+@keyframes row-highlight-pulse-right-stripe {
+  0%, 100% {
+    box-shadow:
+      inset -6px 0 0 hsl(245 75% 51%),
+      inset 0 3px 0 hsl(245 75% 51% / 0.7),
+      inset 0 -3px 0 hsl(245 75% 51% / 0.7);
+  }
+  50% {
+    box-shadow:
+      inset -6px 0 0 hsl(245 75% 51%),
+      inset 0 3px 0 hsl(245 75% 51%),
+      inset 0 -3px 0 hsl(245 75% 51%);
+  }
+}
+
+/* All TDs in the highlighted row get the pulsing background + top/bottom rails */
+tr.row-linked-highlight > td {
+  animation: row-highlight-pulse-bg 1.4s ease-in-out infinite,
+             row-highlight-pulse-outline-top 1.4s ease-in-out infinite,
+             row-highlight-pulse-outline-bottom 1.4s ease-in-out infinite;
+  transition: none !important;
+}
+
+/* First TD additionally gets the left accent stripe */
+tr.row-linked-highlight > td:first-child {
+  animation: row-highlight-pulse-bg 1.4s ease-in-out infinite,
+             row-highlight-pulse-left-stripe 1.4s ease-in-out infinite;
+}
+
+/* Last TD additionally gets the right accent stripe */
+tr.row-linked-highlight > td:last-child {
+  animation: row-highlight-pulse-bg 1.4s ease-in-out infinite,
+             row-highlight-pulse-right-stripe 1.4s ease-in-out infinite;
+}

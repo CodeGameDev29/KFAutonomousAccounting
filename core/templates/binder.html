@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ company_name }} — {{ month_name }} {{ year }} Record Binder</title>
+  <style>
+    /* Self-contained stylesheet — no framework, no network requests.
+       IMPORTANT: never set an opaque background-color on td/th globally;
+       row-level striping and the highlight flash rely on painting the row. */
+    :root {
+      --brand-blue: #0f3460;
+      --brand-dark: #1a1a2e;
+      --income-green: #1e7e46;
+      --expense-red: #c22f3e;
+      --muted: #6c757d;
+      --row-even: #f6f8fa;
+      --border: #dee2e6;
+      --card-bg: #ffffff;
+      --page-bg: #fbfaf8;
+      --chip-bg: #eef2f7;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      margin: 0; padding: 0; background: var(--page-bg); color: var(--brand-dark);
+      line-height: 1.45; font-size: 15px;
+    }
+    h1 { color: var(--brand-blue); border-bottom: 3px solid var(--brand-blue);
+         padding-bottom: 0.5rem; margin: 0 0 0.25rem 0; font-size: 1.7rem; }
+    h2 { color: var(--brand-dark); margin: 2.25rem 0 0.75rem 0; font-size: 1.25rem; }
+    h3 { color: var(--brand-dark); margin: 1.25rem 0 0.5rem 0; font-size: 1.02rem; }
+
+    /* Sidebar — <aside> to keep it a plain block container */
+    .sidebar { position: fixed; left: 0; top: 0; width: 230px; height: 100vh;
+               background: #f4f4f2; border-right: 1px solid var(--border);
+               padding: 20px 12px; font-size: 13px; overflow-y: auto; z-index: 10; }
+    .sidebar strong { display: block; margin-bottom: 0.75rem; font-size: 14px; color: var(--brand-dark); }
+    .sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .sidebar ul li { margin-bottom: 0.3rem; }
+    .sidebar ul li a { color: var(--brand-blue); text-decoration: none; padding: 4px 8px;
+                       display: block; border-radius: 4px; }
+    .sidebar ul li a:hover { background: #e7e9ec; }
+    .sidebar .print-link { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .sidebar .print-link a { cursor: pointer; color: var(--muted); text-decoration: none; }
+
+    .main { margin-left: 250px; padding: 26px 34px 40px; max-width: 1150px; }
+
+    .subtitle { color: var(--muted); font-size: 0.92rem; margin: 0.15rem 0; }
+
+    /* ── Summary tiles (per currency, analytics-style) ─────────────────── */
+    .currency-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em;
+                      text-transform: uppercase; color: var(--muted); margin: 1.1rem 0 0.4rem; }
+    .tile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
+    .tile { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 0.9rem 1.05rem; border-left-width: 4px; }
+    .tile .t-label { font-size: 0.82rem; color: var(--muted); margin: 0; }
+    .tile .t-value { font-size: 1.45rem; font-weight: 700; margin: 0.2rem 0 0;
+                     font-variant-numeric: tabular-nums;
+                     font-family: "SF Mono", Consolas, "Liberation Mono", monospace; }
+    .tile .t-sub { font-size: 0.75rem; color: var(--muted); margin: 0.2rem 0 0; }
+    .tile-in  { border-left-color: var(--income-green); }
+    .tile-out { border-left-color: var(--expense-red); }
+    .tile-net-pos { border-left-color: var(--income-green); }
+    .tile-net-neg { border-left-color: var(--expense-red); }
+
+    .explain { font-size: 0.85rem; color: var(--muted); margin: 0.6rem 0 0; }
+    .explain strong { color: var(--brand-dark); }
+
+    /* ── Tables ─────────────────────────────────────────────────────────── */
+    table { width: 100%; border-collapse: collapse; margin: 0.4rem 0 1.4rem;
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; }
+    th { background: var(--brand-blue); color: #fff; padding: 0.55rem 0.7rem;
+         text-align: left; font-size: 0.8rem; }
+    th.num, td.num { text-align: right; }
+    td { padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--border); font-size: 0.85rem;
+         vertical-align: top; }
+    tbody tr:nth-child(even) { background: var(--row-even); }
+    caption { caption-side: top; text-align: left; font-weight: 600; font-size: 0.92rem;
+              padding: 0.4rem 0; color: var(--brand-dark); }
+    tfoot td { border-top: 2px solid var(--brand-blue); font-weight: 600; background: #f0f3f7; }
+
+    .amount { text-align: right; font-family: "SF Mono", Consolas, "Liberation Mono", monospace;
+              font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .credit { color: var(--income-green); }
+    .debit { color: var(--expense-red); }
+    .muted { color: var(--muted); }
+    .row-transfer td { color: var(--muted); }
+    .row-transfer .amount { font-style: italic; }
+
+    /* Section header rows inside the category P&L table */
+    tr.section-row td { background: var(--chip-bg); font-weight: 700; font-size: 0.8rem;
+                        letter-spacing: 0.04em; text-transform: uppercase; color: var(--brand-blue);
+                        border-top: 2px solid var(--border); }
+    tr.section-total td { font-weight: 600; background: #fbfcfd; border-bottom: 2px solid var(--border); }
+    .gifi { display: inline-block; font-size: 0.72rem; color: var(--muted);
+            font-family: "SF Mono", Consolas, monospace; background: var(--chip-bg);
+            border-radius: 3px; padding: 0 5px; margin-left: 6px; white-space: nowrap; }
+
+    /* Status badges */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.78em;
+             font-weight: 500; text-decoration: none; white-space: nowrap; }
+    .badge-matched { background: #d4edda; color: #155724; }
+    .badge-unmatched { background: #f8d7da; color: #721c24; }
+    /* "No receipt needed" is a resolved state whose money still counts — it
+       reads green, not grey. Grey is reserved for EXCLUDED, the one status
+       whose amount really is left out of the totals. */
+    .badge-ignored { background: #e8f5e9; color: #1b5e20; }
+    .badge-linked { background: #d1ecf1; color: #0c5460; }
+    .badge-pending_review { background: #fff3cd; color: #856404; }
+    .badge-excluded { background: #e2e3e5; color: #383d41; text-decoration: line-through; }
+    a.badge.link-jump { cursor: pointer; }
+    a.badge.link-jump:hover { filter: brightness(0.95); text-decoration: underline; }
+
+    /* Highlight animation when jumping to a linked transaction row.
+       Applied to the row's CELLS — a td-level background always wins the
+       paint order, so the flash is visible regardless of row striping. */
+    @keyframes highlight-flash {
+      0%   { background-color: #fff3b0; }
+      70%  { background-color: #fff3b0; }
+      100% { background-color: transparent; }
+    }
+    tbody tr.highlight-row > td {
+      animation: highlight-flash 2s ease-out;
+    }
+    tbody tr:target > td { animation: highlight-flash 2s ease-out; }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin: 0.8rem 0; }
+    .summary-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+                    padding: 0.9rem; text-align: center; }
+    .summary-card .value { font-size: 1.35rem; font-weight: 700; color: var(--brand-dark); }
+    .summary-card .label { font-size: 0.82rem; color: var(--muted); margin-top: 0.2rem; }
+
+    a.proof-link { color: var(--brand-blue); }
+    a.proof-link:hover { text-decoration: underline; }
+    .stmt-missing { color: var(--muted); font-style: italic; }
+
+    .source-statements { margin: 0 0 1rem 0; padding: 0.6rem 0.85rem; border: 1px solid var(--border);
+                         border-radius: 8px; background: var(--card-bg); font-size: 0.85rem; }
+    .source-statements .label { display: block; font-size: 0.7rem; font-weight: 600;
+                                letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted);
+                                margin-bottom: 0.35rem; }
+    .source-statements ul { list-style: none; padding: 0; margin: 0; }
+    .source-statements li { margin: 0.1rem 0; }
+    .source-statements a { color: var(--brand-blue); text-decoration: none; }
+    .source-statements a:hover { text-decoration: underline; }
+
+    .skip-link { position: absolute; top: -40px; left: 0; background: var(--brand-blue);
+                 color: white; padding: 0.5rem 1rem; z-index: 100; text-decoration: none; }
+    .skip-link:focus { top: 0; }
+
+    .back-top { font-size: 0.85rem; color: var(--muted); text-decoration: none; }
+    .back-top:hover { text-decoration: underline; }
+
+    .uncat { color: #856404; }
+
+    @media (max-width: 768px) {
+      .sidebar { position: relative; width: 100%; height: auto; border-right: none;
+                 border-bottom: 1px solid var(--border); }
+      .sidebar ul { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+      .sidebar ul li { display: inline; }
+      .main { margin-left: 0; padding: 16px; }
+      .tile-grid, .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      .sidebar, .back-top, .skip-link, .print-link { display: none !important; }
+      .main { margin-left: 0; padding: 0; }
+      body { font-size: 10pt; color: black; background: white; }
+      thead { display: table-header-group; }
+      tr { page-break-inside: avoid; }
+      .account-section { page-break-before: always; }
+      .account-section:first-of-type { page-break-before: avoid; }
+      a.proof-link::after { content: " (" attr(href) ")"; font-size: 0.8em; color: #666; }
+      th { background: var(--brand-blue) !important; color: white !important;
+           -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      tr.section-row td { background: var(--chip-bg) !important;
+           -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .tile, .summary-card { border: 1px solid #ccc; }
+      @page { margin: 1.5cm; }
+    }
+  </style>
+</head>
+<body id="top">
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <aside class="sidebar" aria-label="Report navigation">
+    <strong>Contents</strong>
+    <ul>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#categories">Where the money went</a></li>
+      <li><a href="#reconciliation">Reconciliation</a></li>
+      {% if transfer_rows %}
+      <li><a href="#transfers">Internal transfers</a></li>
+      {% endif %}
+      {% for acct in accounts %}
+      <li><a href="#{{ acct.account_code | lower }}">{{ acct.account_name }} ({{ acct.transaction_count }})</a></li>
+      {% endfor %}
+    </ul>
+    <div class="print-link">
+      <a onclick="window.print(); return false;" href="#">Print Report</a>
+    </div>
+  </aside>
+
+  <div class="main" id="main">
+    <header>
+      <h1>{{ company_name }}</h1>
+      <p class="subtitle">Monthly record binder — {{ month_name }} {{ year }}</p>
+      <p class="subtitle">Generated {{ generated_at }} · {{ total_transactions }} transactions</p>
+    </header>
+
+    <section id="summary">
+      <h2>Executive Summary</h2>
+      {% if not currency_totals %}
+      <p class="explain">Every transaction this month is an internal transfer between your own
+        accounts, so there is no income or spending to total. See
+        <a href="#transfers">Internal transfers</a>.</p>
+      {% endif %}
+      {% for ct in currency_totals %}
+      {% if multi_currency %}
+      <p class="currency-label">{{ ct.currency }} accounts ({{ ct.txn_count }} transactions)</p>
+      {% endif %}
+      <div class="tile-grid">
+        <div class="tile tile-in">
+          <p class="t-label">Money in{% if multi_currency %} ({{ ct.currency }}){% endif %}</p>
+          <p class="t-value credit">{{ ct.income | currency(ct.currency) }}</p>
+        </div>
+        <div class="tile tile-out">
+          <p class="t-label">Money out{% if multi_currency %} ({{ ct.currency }}){% endif %}</p>
+          <p class="t-value debit">{{ ct.expenses | currency(ct.currency) }}</p>
+        </div>
+        <div class="tile {% if ct.net >= 0 %}tile-net-pos{% else %}tile-net-neg{% endif %}">
+          <p class="t-label">Net (money in − out){% if multi_currency %} ({{ ct.currency }}){% endif %}</p>
+          <p class="t-value {% if ct.net >= 0 %}credit{% else %}debit{% endif %}">{{ ct.net | currency(ct.currency) }}</p>
+        </div>
+      </div>
+      {% endfor %}
+      <p class="explain">
+        {% if multi_currency %}
+        <strong>Currencies are totalled separately</strong> — amounts in different currencies are
+        never added together in this report.
+        {% endif %}
+        {% if transfer_rows %}
+        Internal transfers between your own accounts ({{ transfer_rows | length }} transactions)
+        are listed in the tables below but <strong>excluded from all totals</strong> to avoid
+        double-counting — see <a href="#transfers">Internal transfers</a>.
+        {% endif %}
+      </p>
+    </section>
+
+    <section id="categories">
+      <h2>Where the Money Went</h2>
+      <p class="explain">Every transaction grouped by category, following the ISED / CRA GIFI
+        income-statement structure. GIFI line codes are shown next to each category.</p>
+      {% for bd in category_breakdowns %}
+      <table>
+        <caption>Category breakdown{% if multi_currency %} — {{ bd.currency }}{% endif %} ({{ month_name }} {{ year }})</caption>
+        <thead><tr>
+          <th scope="col">Category</th>
+          <th scope="col" class="num">Transactions</th>
+          <th scope="col" class="num">Money in</th>
+          <th scope="col" class="num">Money out</th>
+          <th scope="col" class="num">Net</th>
+        </tr></thead>
+        <tbody>
+        {% for sec in bd.sections %}
+          <tr class="section-row"><td colspan="5">{{ sec.label }}</td></tr>
+          {% for row in sec.rows %}
+          <tr>
+            <td>{% if row.category == 'Uncategorized' %}<span class="uncat">Uncategorized</span>{% else %}{{ row.category }}{% endif %}{% if row.gifi %}<span class="gifi" title="CRA GIFI line code">GIFI {{ row.gifi }}</span>{% endif %}</td>
+            <td class="num">{{ row.txn_count }}</td>
+            <td class="amount">{% if row.income %}<span class="credit">+{{ row.income | currency(bd.currency) }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="amount">{% if row.expenses %}<span class="debit">−{{ row.expenses | currency(bd.currency) }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="amount {% if row.net >= 0 %}credit{% else %}debit{% endif %}">{{ row.net | currency(bd.currency) }}</td>
+          </tr>
+          {% endfor %}
+          {% if sec.rows | length > 1 %}
+          <tr class="section-total">
+            <td>{{ sec.label }} subtotal</td>
+            <td class="num"></td>
+            <td class="amount credit">{% if sec.income %}+{{ sec.income | currency(bd.currency) }}{% endif %}</td>
+            <td class="amount debit">{% if sec.expenses %}−{{ sec.expenses | currency(bd.currency) }}{% endif %}</td>
+            <td class="amount {% if sec.net >= 0 %}credit{% else %}debit{% endif %}">{{ sec.net | currency(bd.currency) }}</td>
+          </tr>
+          {% endif %}
+        {% endfor %}
+        </tbody>
+        <tfoot><tr>
+          <td>Total{% if multi_currency %} ({{ bd.currency }}){% endif %}</td>
+          <td class="num"></td>
+          <td class="amount">{% if bd.income %}<span class="credit">+{{ bd.income | currency(bd.currency) }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td class="amount">{% if bd.expenses %}<span class="debit">−{{ bd.expenses | currency(bd.currency) }}</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+          <td class="amount {% if bd.net >= 0 %}credit{% else %}debit{% endif %}">{{ bd.net | currency(bd.currency) }}</td>
+        </tr></tfoot>
+      </table>
+      {% endfor %}
+    </section>
+
+    <section id="reconciliation">
+      <h2>Reconciliation Status</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.with_proof }}</div>
+          <div class="label">Substantiated by a proof in this binder</div>
+        </div>
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.proof_files }}</div>
+          <div class="label">Files in proof_of_transaction/</div>
+        </div>
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.substantiated_rate }}%</div>
+          <div class="label">Substantiated ({{ reconciliation.with_proof }} of {{ reconciliation.reconcilable }} needing a proof)</div>
+        </div>
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.linked_to_transfer }}</div>
+          <div class="label">Linked to a transfer counterpart (no receipt)</div>
+        </div>
+        {% if reconciliation.matched_no_proof_file %}
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.matched_no_proof_file }}</div>
+          <div class="label">Matched, but the proof file is not in this binder</div>
+        </div>
+        {% endif %}
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.no_document }}</div>
+          <div class="label">No supporting document yet</div>
+        </div>
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.pending_review }}</div>
+          <div class="label">Pending review</div>
+        </div>
+        <div class="summary-card">
+          <div class="value">{{ reconciliation.no_receipt_needed }}</div>
+          <div class="label">No receipt needed (amounts still counted)</div>
+        </div>
+      </div>
+      <p class="explain">"Substantiated" counts only transactions whose proof document is actually
+        inside this ZIP, under <code>proof_of_transaction/</code> — it is the same number as the
+        file count beside it and as "Proofs of Transaction" in README.txt.
+        <strong>"Linked to transfer" is not a receipt:</strong> it means the row was matched to its
+        counterpart transaction (the other side of an internal transfer), which documents that the
+        money moved between your own accounts but is not a proof of a purchase or a sale.
+        "No receipt needed" rows are self-evident (bank fees, interest, internal
+        transfers) and require no supporting document — their amounts are still
+        included in every total on this page.</p>
+    </section>
+
+    {% if transfer_rows %}
+    <section id="transfers">
+      <h2>Internal Transfers (excluded from totals)</h2>
+      <p class="explain">Money moved between your own accounts — currency conversions, credit-card
+        payments, and account top-ups. Counting these as income or expenses would double-count the
+        same dollars, so they are excluded from every total in this report. They remain listed here
+        and in the account tables for full auditability.</p>
+      <table>
+        <thead><tr>
+          <th scope="col">Date</th>
+          <th scope="col">Account</th>
+          <th scope="col">Description</th>
+          <th scope="col">Category</th>
+          <th scope="col" class="num">Amount</th>
+          <th scope="col">Counterpart</th>
+        </tr></thead>
+        <tbody>
+        {% for tr in transfer_rows %}
+          <tr>
+            <td>{{ tr.date }}</td>
+            <td>{{ tr.account }}</td>
+            <td>{{ tr.description }}</td>
+            <td>{{ tr.category }}</td>
+            <td class="amount">{{ tr.sign }}{{ tr.amount_display }}</td>
+            <td>
+              {% if tr.linked_targets %}
+              {% for lt in tr.linked_targets %}
+              <a href="#txn-{{ lt }}" class="badge badge-linked link-jump"
+                 data-target="txn-{{ lt }}">view counterpart{% if tr.linked_targets | length > 1 %} {{ loop.index }}{% endif %}</a>
+              {% endfor %}
+              {% else %}
+              <span class="muted">—</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+    {% endif %}
+
+    {% for acct in accounts %}
+    <section id="{{ acct.account_code | lower }}" class="account-section">
+      <h2>{{ acct.account_name }} <span style="color:var(--muted);font-weight:normal">({{ acct.transaction_count }} transactions)</span></h2>
+
+      {% if acct.source_files and acct.source_files | length > 0 %}
+      <div class="source-statements" aria-label="Source statements for {{ acct.account_name }}">
+        <span class="label">Source statement{% if acct.source_files | length > 1 %}s{% endif %} — verify this table against the original document</span>
+        <ul>
+          {% for sf in acct.source_files %}
+          <li>
+            {% if sf.available %}
+              <a href="{{ sf.zip_path }}" target="_blank" rel="noopener">{{ sf.source_file }}</a>
+            {% else %}
+              <span class="stmt-missing" title="Original file not available in this archive">
+                {{ sf.source_file }} (source file not archived)
+              </span>
+            {% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      <table>
+        <caption>{{ acct.account_name }} — {{ month_name }} {{ year }}</caption>
+        <thead><tr>
+          <th scope="col">Date</th>
+          <th scope="col">Description</th>
+          <th scope="col">Vendor</th>
+          <th scope="col">Category</th>
+          <th scope="col" class="num">Amount</th>
+          <th scope="col">Status</th>
+          <th scope="col">Proof of Transaction</th>
+          <th scope="col">Notes</th>
+        </tr></thead>
+        <tbody>
+        {% for row in acct.rows %}
+          <tr id="txn-{{ row.id }}" {% if row.is_transfer %}class="row-transfer" title="Internal transfer — excluded from totals"{% endif %}>
+            <td style="white-space:nowrap">{{ row.date }}</td>
+            <td>{{ row.description }}</td>
+            <td>{{ row.vendor or '' }}</td>
+            <td>{% if row.is_uncategorized %}<span class="uncat">Uncategorized</span>{% else %}{{ row.category }}{% endif %}</td>
+            <td class="amount {% if row.is_credit %}credit{% else %}debit{% endif %}">{{ row.sign }}{{ row.amount_display }}{% if row.is_transfer %} <span class="muted" title="Excluded from totals">⇄</span>{% endif %}</td>
+            <td>
+              {% if row.status == 'LINKED' and row.linked_targets %}
+                {% for lt in row.linked_targets %}
+                <a href="#txn-{{ lt }}"
+                   class="badge badge-linked link-jump"
+                   data-target="txn-{{ lt }}"
+                   aria-label="Jump to linked transaction">{{ row.status_label }}{% if row.linked_targets | length > 1 %} {{ loop.index }}/{{ row.linked_targets | length }}{% endif %}</a>
+                {% endfor %}
+              {% else %}
+                <span class="badge badge-{{ row.status | lower }}">{{ row.status_label }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if row.proof_state == 'linked' %}
+                {% for p in row.proofs %}
+                  <a href="{{ p.href }}" class="proof-link" {% if not loop.last %}style="display:block;margin-bottom:2px"{% endif %}
+                     aria-label="Proof of Transaction: {{ p.label }}">{{ p.label }}</a>
+                {% endfor %}
+              {% elif row.proof_state == 'not_archived' %}
+                <span class="stmt-missing" title="Matched, but the proof file is not archived in this binder.">
+                  {{ row.vendor or 'Matched' }} (file not archived)
+                </span>
+              {% elif row.proof_state == 'na' %}
+                <span class="muted">N/A</span>
+              {% else %}
+                <span class="muted">&mdash;</span>
+              {% endif %}
+            </td>
+            <td>{{ row.note }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        {% if not acct.currency_totals %}
+          <tr><td colspan="8" class="muted" style="font-weight:normal">
+            All transactions in this account are internal transfers — no income/expense subtotals.
+          </td></tr>
+        {% endif %}
+        {% for ct in acct.currency_totals %}
+          <tr>
+            <td colspan="4">{% if loop.first %}Subtotals{% endif %}{% if acct.currency_totals | length > 1 %} ({{ ct.currency }}){% endif %}</td>
+            <td class="amount">
+              {% if ct.income %}<span class="credit">+{{ ct.income | currency(ct.currency) }}</span>{% else %}<span class="muted">—</span>{% endif %}<br>
+              {% if ct.expenses %}<span class="debit">−{{ ct.expenses | currency(ct.currency) }}</span>{% else %}<span class="muted">—</span>{% endif %}
+            </td>
+            <td colspan="3">Net: <span class="{% if ct.net >= 0 %}credit{% else %}debit{% endif %}">{{ ct.net | currency(ct.currency) }}</span></td>
+          </tr>
+        {% endfor %}
+        {% if acct.transfer_count %}
+          <tr><td colspan="8" class="muted" style="font-weight:normal;font-size:0.78rem">
+            {{ acct.transfer_count }} internal transfer{% if acct.transfer_count > 1 %}s{% endif %} (⇄) listed above
+            {% if acct.transfer_count > 1 %}are{% else %}is{% endif %} excluded from these subtotals.
+          </td></tr>
+        {% endif %}
+        </tfoot>
+      </table>
+      <a href="#top" class="back-top">Back to top</a>
+    </section>
+    {% endfor %}
+
+    <footer style="margin-top:3rem;padding-top:1.5rem;border-top:2px solid var(--border);color:var(--muted);font-size:0.85rem;">
+      <p><strong>Record-keeping note:</strong> Canadian record-keeping guidance (CRA IC05-1R1) expects business records to be kept for at least six years from the end of the last tax year they relate to. This binder is designed around that guidance; it is not a certification.</p>
+      <p>This archive is unencrypted so any reviewer can open it. The data behind it sits on a single self-hosted machine, with no provider-managed encryption at rest and no point-in-time recovery.</p>
+      <p>Generated by Autonomous Accounting | {{ generated_at }}</p>
+    </footer>
+  </div>
+  <script>
+    (function () {
+      function flashRow(id) {
+        var row = document.getElementById(id);
+        if (!row) return;
+        row.classList.remove('highlight-row');
+        // force reflow so re-adding the class restarts the animation
+        void row.offsetWidth;
+        row.classList.add('highlight-row');
+        setTimeout(function () { row.classList.remove('highlight-row'); }, 2100);
+      }
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a.link-jump');
+        if (!a) return;
+        var targetId = a.getAttribute('data-target');
+        if (!targetId) return;
+        // Let the browser handle the hash scroll, then flash.
+        setTimeout(function () { flashRow(targetId); }, 0);
+      });
+      // Also flash on initial load / hash change (e.g. a bookmarked #txn-ID).
+      function handleHash() {
+        var h = window.location.hash;
+        if (h && h.indexOf('#txn-') === 0) flashRow(h.slice(1));
+      }
+      window.addEventListener('hashchange', handleHash);
+      window.addEventListener('DOMContentLoaded', handleHash);
+    })();
+  </script>
+</body>
+</html>

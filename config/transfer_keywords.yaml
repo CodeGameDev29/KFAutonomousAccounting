@@ -1,0 +1,102 @@
+# Transfer keyword dictionaries for cross-statement transaction linking.
+# Each entry maps a regex pattern to a transfer type, side (SOURCE/TARGET),
+# and valid account types. Used by core/transaction_linker.py.
+#
+# The patterns below cover the descriptor grammar of the built-in formats — the
+# BMO export format, Wise and PayPal — and are EXAMPLES for every other
+# institution. Statement wording is institution-specific, so edit this table to
+# match what your own statements print: keep the transfer_type / side / priority
+# fields, change the regexes.
+#
+# An entry only becomes a link candidate when BOTH legs of a transfer match a
+# keyword: one SOURCE entry scoped to the account the money leaves, one TARGET
+# entry scoped to the account it arrives in. A leg that matches nothing is never
+# paired, so the two sides of a transfer stay unlinked. `account_types` scopes an
+# entry to the account keys in config/accounts.yaml; `priority` breaks ties when
+# several entries match one description.
+#
+# A missing file means no transfer is ever linked by keyword. An entry whose
+# pattern will not compile, or that is missing a field, is skipped with a
+# warning; the rest of the table keeps working.
+
+entries:
+  # Credit Card Payment — chequing (CAD) source side
+  - pattern: "OnlineTransfer.*TF\\d+"
+    transfer_type: CREDIT_CARD_PAYMENT
+    side: SOURCE
+    account_types: [CAD]
+    priority: 90
+  - pattern: "\\[CW\\]\\s*TF\\s*\\d+"
+    transfer_type: CREDIT_CARD_PAYMENT
+    side: SOURCE
+    account_types: [CAD]
+    priority: 90
+
+  # Credit Card Payment — card target side
+  - pattern: "PAYMENT\\s*-?\\s*THANK\\s*YOU"
+    transfer_type: CREDIT_CARD_PAYMENT
+    side: TARGET
+    account_types: [CreditCard]
+    priority: 95
+  # In the BMO export format a card statement books an incoming payment from a
+  # chequing account as "TRSF FROM/DE ACCT/CPT <account-number>" — the twin of the
+  # chequing "OnlineTransfer,TF…" debit above. The INTERNAL_TRANSFER "TRSF FROM"
+  # entry further down is scoped to CAD/USD chequing, so this card-scoped entry
+  # is what gives the card leg a keyword to match; without it the pair is never
+  # a link candidate and both legs stay unlinked.
+  - pattern: "TRSF\\s*FROM"
+    transfer_type: CREDIT_CARD_PAYMENT
+    side: TARGET
+    account_types: [CreditCard]
+    priority: 90
+
+  # FX Conversion — chequing (CAD) source side
+  - pattern: "US\\$\\s*Transfer|USDTFR"
+    transfer_type: FX_CONVERSION
+    side: SOURCE
+    account_types: [CAD]
+    priority: 85
+
+  # FX Conversion — chequing (USD) target side. The trailing run is the
+  # counterpart account number: digits and separators, grouped differently by
+  # each institution.
+  - pattern: "^Transfer,[\\d-]{6,}"
+    transfer_type: FX_CONVERSION
+    side: TARGET
+    account_types: [USD]
+    priority: 80
+
+  # Wise Transfer — bank source side
+  - pattern: "WISEMSP|WISE\\s*MSP"
+    transfer_type: WISE_TRANSFER
+    side: SOURCE
+    account_types: [CAD]
+    priority: 85
+  - pattern: "WISE\\s*PAYMENTS|WISE\\s*TRANSFER"
+    transfer_type: WISE_TRANSFER
+    side: SOURCE
+    account_types: [CAD, USD]
+    priority: 85
+
+  # Wise Transfer — Wise target side. A Wise top-up names the funding bank, so
+  # this pattern carries the name of a built-in format; change it to the name
+  # your own Wise statement prints.
+  - pattern: "from\\s*BMO|Funded|Top\\s*up"
+    transfer_type: WISE_TRANSFER
+    side: TARGET
+    account_types: [Wise]
+    priority: 80
+
+  # Internal Transfer
+  - pattern: "TRSF\\s*FROM"
+    transfer_type: INTERNAL_TRANSFER
+    side: TARGET
+    account_types: [CAD, USD]
+    priority: 65
+
+  # Refund
+  - pattern: "REFUND|CREDIT\\s*ADJ|DISPUTE\\s*CREDIT"
+    transfer_type: REFUND
+    side: SOURCE
+    account_types: [CreditCard]
+    priority: 60

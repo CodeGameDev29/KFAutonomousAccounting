@@ -1,0 +1,15 @@
+# Autonomous Accounting — robots policy
+#
+# This is a self-hosted bookkeeping application, not a website. Every useful
+# page is behind sign-in, and the few that are not (the landing page and the
+# two legal pages) describe whichever instance is serving them. The default is
+# therefore to ask crawlers to stay out entirely rather than enumerate the
+# application's routes here — a disallow list is also a map.
+#
+# To run a deliberately public instance with the landing page indexed, replace
+# the two lines below with `Allow: /` plus a disallow for each signed-in route.
+# Note that robots.txt is a request, not access control; the only thing that
+# keeps data private is authentication.
+
+User-agent: *
+Disallow: /

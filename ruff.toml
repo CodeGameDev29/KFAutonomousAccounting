@@ -1,0 +1,21 @@
+line-length = 120
+target-version = "py311"
+
+exclude = [
+    ".venv",
+    "web",
+    "__pycache__",
+]
+
+[lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[lint.per-file-ignores]
+"tests/*" = ["E402", "F841"]
+# Files that legitimately need imports after a sys.path hack, PROJECT_ROOT
+# resolution, or a load_dotenv() call. Moving these imports earlier would break
+# the module at runtime.
+"server/app.py" = ["E402"]
+"core/export_binder.py" = ["E402"]
+"core/reconciliation.py" = ["E402"]

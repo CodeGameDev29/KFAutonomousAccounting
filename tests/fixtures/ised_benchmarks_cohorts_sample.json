@@ -1,0 +1,328 @@
+{
+  "cells": {
+    "5414|30K-5M|all": {
+      "business_count": 38600,
+      "cohort": "all",
+      "cohort_revenue_high": null,
+      "cohort_revenue_low": null,
+      "lines": {
+        "advertising": 0.036,
+        "cca_depreciation": {
+          "median": 0.024,
+          "pct_of_revenue": 0.024,
+          "q1": 0.008,
+          "q3": 0.041
+        },
+        "employee_benefits": {
+          "median": 0.035,
+          "pct_of_revenue": 0.035,
+          "q1": 0.018,
+          "q3": 0.058
+        },
+        "operating_revenue": 1.0,
+        "professional_fees": {
+          "median": 0.052,
+          "pct_of_revenue": 0.052,
+          "q1": 0.024,
+          "q3": 0.086
+        },
+        "rent": {
+          "median": 0.038,
+          "pct_of_revenue": 0.038,
+          "q1": 0.016,
+          "q3": 0.062
+        },
+        "salaries_wages": {
+          "median": 0.29,
+          "pct_of_revenue": 0.29,
+          "q1": 0.22,
+          "q3": 0.38
+        },
+        "subcontracts": {
+          "median": 0.11,
+          "pct_of_revenue": 0.11,
+          "q1": 0.07,
+          "q3": 0.18
+        }
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": 0.77,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.72,
+        "net_profit_margin": 0.16
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 38600,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|pm_q1": {
+      "business_count": 9650,
+      "cohort": "pm_q1",
+      "cohort_revenue_high": null,
+      "cohort_revenue_low": null,
+      "lines": {
+        "advertising": 0.062,
+        "employee_benefits": 0.04,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.057,
+        "rent": 0.048,
+        "salaries_wages": 0.36,
+        "subcontracts": 0.155
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.66,
+        "net_profit_margin": 0.015
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|pm_q2": {
+      "business_count": 9650,
+      "cohort": "pm_q2",
+      "cohort_revenue_high": null,
+      "cohort_revenue_low": null,
+      "lines": {
+        "advertising": 0.047,
+        "employee_benefits": 0.036,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.052,
+        "rent": 0.041,
+        "salaries_wages": 0.33,
+        "subcontracts": 0.135
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.69,
+        "net_profit_margin": 0.095
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|pm_q3": {
+      "business_count": 9650,
+      "cohort": "pm_q3",
+      "cohort_revenue_high": null,
+      "cohort_revenue_low": null,
+      "lines": {
+        "advertising": 0.035,
+        "employee_benefits": 0.032,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.048,
+        "rent": 0.035,
+        "salaries_wages": 0.3,
+        "subcontracts": 0.115
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.72,
+        "net_profit_margin": 0.185
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|pm_q4": {
+      "business_count": 9650,
+      "cohort": "pm_q4",
+      "cohort_revenue_high": null,
+      "cohort_revenue_low": null,
+      "lines": {
+        "advertising": 0.024,
+        "employee_benefits": 0.027,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.043,
+        "rent": 0.028,
+        "salaries_wages": 0.26,
+        "subcontracts": 0.092
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.76,
+        "net_profit_margin": 0.285
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|rev_q1": {
+      "business_count": 9650,
+      "cohort": "rev_q1",
+      "cohort_revenue_high": 180000,
+      "cohort_revenue_low": 30000,
+      "lines": {
+        "advertising": 0.041,
+        "cca_depreciation": 0.026,
+        "employee_benefits": 0.026,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.058,
+        "rent": 0.044,
+        "salaries_wages": 0.24,
+        "subcontracts": 0.145
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.7,
+        "net_profit_margin": 0.11
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|rev_q2": {
+      "business_count": 9650,
+      "cohort": "rev_q2",
+      "cohort_revenue_high": 1200000,
+      "cohort_revenue_low": 450000,
+      "lines": {
+        "advertising": 0.037,
+        "cca_depreciation": 0.024,
+        "employee_benefits": 0.032,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.053,
+        "rent": 0.039,
+        "salaries_wages": 0.27,
+        "subcontracts": 0.125
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.71,
+        "net_profit_margin": 0.14
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|rev_q3": {
+      "business_count": 9650,
+      "cohort": "rev_q3",
+      "cohort_revenue_high": 2800000,
+      "cohort_revenue_low": 1200000,
+      "lines": {
+        "advertising": 0.033,
+        "cca_depreciation": 0.021,
+        "employee_benefits": 0.037,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.049,
+        "rent": 0.034,
+        "salaries_wages": 0.31,
+        "subcontracts": 0.105
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.73,
+        "net_profit_margin": 0.17
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|30K-5M|rev_q4": {
+      "business_count": 9650,
+      "cohort": "rev_q4",
+      "cohort_revenue_high": 5000000,
+      "cohort_revenue_low": 2800000,
+      "lines": {
+        "advertising": 0.029,
+        "cca_depreciation": 0.019,
+        "employee_benefits": 0.041,
+        "operating_revenue": 1.0,
+        "professional_fees": 0.045,
+        "rent": 0.029,
+        "salaries_wages": 0.34,
+        "subcontracts": 0.088
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": null,
+      "quality": "A",
+      "ratios": {
+        "gross_margin": 0.75,
+        "net_profit_margin": 0.2
+      },
+      "revenue_band": "30K-5M",
+      "sample_size": 9650,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    },
+    "5414|5M-20M|all": {
+      "business_count": 11,
+      "cohort": "all",
+      "cohort_revenue_high": null,
+      "cohort_revenue_low": null,
+      "lines": {
+        "operating_revenue": 1.0,
+        "salaries_wages": {
+          "median": 0.33,
+          "pct_of_revenue": 0.33,
+          "q1": 0.25,
+          "q3": 0.42
+        },
+        "subcontracts": 0.098
+      },
+      "naics": "5414",
+      "naics_label": "Specialized design services",
+      "pct_profitable": 0.88,
+      "quality": "E",
+      "ratios": {
+        "gross_margin": 0.69,
+        "net_profit_margin": 0.13
+      },
+      "revenue_band": "5M-20M",
+      "sample_size": 11,
+      "source_url": "https://example.invalid/peer-benchmarks/5414"
+    }
+  },
+  "meta": {
+    "cohorts": [
+      "all",
+      "rev_q1",
+      "rev_q2",
+      "rev_q3",
+      "rev_q4",
+      "pm_q1",
+      "pm_q2",
+      "pm_q3",
+      "pm_q4"
+    ],
+    "geography": "Canada (national)",
+    "min_business_count": 20,
+    "notice": "Invented peer figures in the shape of config/ised_benchmarks.json. Not industry data, and not a sample of any published release: no Open Government Licence data file ships with this repository. Run scripts/ingest_ised_benchmarks.py to download and build the real table.",
+    "quartiles": [
+      "all"
+    ],
+    "revenue_bands": [
+      "30K-5M",
+      "5M-20M"
+    ],
+    "revenue_floor_cad": 30000,
+    "shape_note": "The revenue cohorts deliberately leave the $180K-$450K window uncovered, so the fallback from a size cohort to the whole-band cell has a case to exercise.",
+    "source": "SYNTHETIC -- generated by scripts/gen_fixtures.py",
+    "source_year": 2026,
+    "synthetic": true
+  }
+}

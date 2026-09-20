@@ -1,0 +1,53 @@
+# Category → GIFI/FPD bucket mapping for the peer-benchmark engine.
+#
+# Loaded once (yaml.safe_load, lru_cache) by core.reasonableness. Each
+# category maps to a `gifi_bucket` slug (shared vocabulary with
+# config/ised_benchmarks.json line keys) plus flags that tell the engine how
+# to treat the money:
+#
+#   gifi_bucket          one of the rollup slugs, or a sentinel:
+#                          non_operating  → revenue that is NOT operating sales
+#                                           (tax refunds, interest income, grants)
+#                          transfer       → internal money movement, ignore entirely
+#                          distribution   → owner draws / dividends (below the line)
+#   is_operating_revenue true only for operating sales (the ratio denominator)
+#   is_distribution      true for owner draws / shareholder distributions
+#   cra_scrutiny_weight  1.0 = normal; >1.0 up-weights a CRA-scrutinized line
+#   is_generic           true for non-descriptive catch-all buckets (Income, Others…)
+#
+# Resolution order (see CategoryGifiMap.resolve): exact category name →
+# fallback_rules (first `contains` substring hit on the normalized name) →
+# default. Extend as categories evolve — a category absent from the map
+# degrades gracefully to `default`, never crashes.
+version: 1
+# NOTE: this file carries no per-category `categories:` block. The fixed Canada
+# ISED/GIFI taxonomy supplies each canonical name's bucket as an EXACT identity
+# map via config/ised_categories.py:as_gifi_map_dict(), and
+# core.reasonableness.load_category_gifi_map builds the `categories` block from
+# that single source of truth. Only `fallback_rules` + `default` below are read
+# from this file — the free-text safety net for category strings that are not in
+# the fixed taxonomy (imported or hand-edited legacy labels).
+# Substring rules, first hit wins (in this order). Order matters: specific
+# expense/tax interceptors precede the broad revenue rule so cost-of-sales /
+# tax-remittance / "Revenue Canada" labels are never flipped into the
+# operating-revenue denominator. Needles are matched against the label with
+# whitespace/punctuation stripped, so keep them specific enough not to collide
+# (e.g. a bare "ai"/"draw" would swallow "airfare"/"withdrawal").
+fallback_rules:
+  - {contains: ["costofsales", "costofgoodssold", "costofgoods", "cogs"], gifi_bucket: cost_of_sales}
+  - {contains: ["salestax", "gsthst", "gstpayable", "hstpayable", "pstpayable", "taxremittance", "taxpayable", "remittance", "revenuecanada", "receivergeneral"], gifi_bucket: non_operating}
+  - {contains: ["clientrevenue", "revenue", "sales", "invoicepaid"], gifi_bucket: operating_revenue, is_operating_revenue: true}
+  - {contains: ["ownerdraw", "ownersdraw", "ownerwithdrawal", "dividend", "shareholder", "distribution"], gifi_bucket: distribution, is_distribution: true, cra_scrutiny_weight: 1.5}
+  - {contains: ["taxrefund", "refund", "interestincome", "grant", "capitalinjection", "loanproceeds"], gifi_bucket: non_operating}
+  - {contains: ["contractor", "subcontract", "upwork", "freelance", "profession"], gifi_bucket: subcontracts, cra_scrutiny_weight: 1.5}
+  - {contains: ["cloud", "infrastructure", "software", "saas", "hosting", "openai", "genai", "artificialintelligence"], gifi_bucket: it_software}
+  - {contains: ["travel", "flight", "airfare", "hotel", "mileage"], gifi_bucket: travel, cra_scrutiny_weight: 2.5}
+  - {contains: ["meal", "entertain", "restaurant"], gifi_bucket: meals_entertainment, cra_scrutiny_weight: 2.5}
+  - {contains: ["vehicle", "motor", "gas", "fuel", "auto"], gifi_bucket: motor_vehicle, cra_scrutiny_weight: 2.0}
+  - {contains: ["insurance"], gifi_bucket: insurance}
+  - {contains: ["rent", "lease"], gifi_bucket: rent}
+  - {contains: ["repair", "maintenance"], gifi_bucket: repairs_maintenance}
+  - {contains: ["advertis", "marketing"], gifi_bucket: advertising}
+  - {contains: ["wage", "payroll", "salary"], gifi_bucket: salaries_wages}
+  - {contains: ["bankfee", "bankcharge", "interest"], gifi_bucket: interest_bank}
+default: {gifi_bucket: other_operating, is_operating_revenue: false, is_distribution: false, cra_scrutiny_weight: 1.0, is_generic: true}

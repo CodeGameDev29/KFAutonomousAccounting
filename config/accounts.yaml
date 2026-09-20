@@ -1,0 +1,38 @@
+# Account display names and ordering — an EXAMPLE you are meant to edit.
+#
+# Two example accounts are active below — the CAD and USD chequing keys the
+# built-in BMO parser writes. The other four are the keys the built-in parsers
+# write when they recognise a card, a Wise export, a PayPal export or a
+# marketplace order file; uncomment the ones you actually use, in both blocks.
+#
+# The keys are the values stored in `transactions.account` — they are what the
+# parsers write and what the rest of the code matches on, so renaming a key here
+# renames nothing in your books; it just stops the name being found. Change the
+# values (the human-readable side) freely: they are what the XLSX binder, the
+# HTML report and the PDF report print above each account's table.
+#
+# `account` is free-form text, so any account key an importer produces is valid.
+# An account with no entry under `display:` is printed using its raw key, and any
+# account not named in `order:` is appended alphabetically after the ones that
+# are — nothing is ever silently dropped from a report. That is why leaving an
+# account commented out here costs you a nicer name and a chosen position, and
+# nothing else.
+#
+# Loaded by config/data_files.py. If this file is missing or unreadable, every
+# account falls back to its raw key and the order falls back to alphabetical.
+
+display:
+  CAD: "CAD Chequing"
+  USD: "USD Chequing"
+  # CreditCard: "Credit Card"
+  # Wise: "Wise Multi-Currency"
+  # PayPal: "PayPal"
+  # Amazon: "Amazon"
+
+order:
+  - "CAD"
+  - "USD"
+  # - "CreditCard"
+  # - "Wise"
+  # - "PayPal"
+  # - "Amazon"

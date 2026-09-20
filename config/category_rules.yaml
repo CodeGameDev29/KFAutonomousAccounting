@@ -1,0 +1,262 @@
+# Deterministic category rules — the Phase 1 regex pre-pass.
+#
+# Every transaction description is matched against this list before any LLM
+# phase runs. A hit locks the row: the category below is assigned and the
+# downstream LLM phases never see it. Typical locks are bank fees, internal
+# transfers and tax remittances — the kinds of things a rule can decide with no
+# context.
+#
+# Order matters: the list is FIRST-MATCH-WINS, top to bottom, and within a rule
+# the patterns are tried in order. Moving a rule up makes it beat everything
+# below it.
+#
+# Each rule is:
+#   category:          a canonical ISED/GIFI name — it MUST be one of the names
+#                      in config/ised_categories.py. That list is a closed
+#                      taxonomy; a name that is not in it is not a category, and
+#                      inventing one breaks the engine.
+#   patterns:          regexes, matched with re.search and IGNORECASE against the
+#                      raw transaction description.
+#   non_reconcilable:  see below. Defaults to false when omitted.
+#
+# `non_reconcilable: true` => internal / no-receipt flow: the row is excluded
+# from the reconciliation match loop AND locked before the LLM phases. It is
+# keyed on the matched PATTERN (not the emitted name) because coarse canonical
+# names are shared across reconcilable and non-reconcilable flows (client income
+# vs payroll direct-deposit both map to "Sales of goods and services").
+#
+# The bracketed codes below (`[SC]`, `[DC]BR`, `[IN]`, `[FX]USD`) and the
+# run-together descriptors beside them are the descriptor grammar of the BMO
+# export format, which the built-in parser reads directly. Every other
+# institution reaches this table through the generic LLM statement parser, whose
+# descriptors look nothing like these.
+#
+# The merchant and descriptor keywords below are EXAMPLES, not a shipped truth:
+# they show the shape of a useful rule, and they are meant to be edited to match
+# what your own statements actually print. Prefer a generic keyword (FUEL,
+# INSURANCE, TELECOM) over a brand name, so one rule covers every merchant of
+# that kind.
+#
+# Business-specific patterns (your own client names, transfer reference numbers)
+# belong in vendor_rules.yaml, not here — this file is meant to stay generic
+# enough to work for any Canadian small business.
+#
+# Loaded by config/data_files.py. If this file is missing, no row is rule-locked
+# and everything goes to the LLM categorization phases instead — slower, but
+# still correct. A single pattern that will not compile is skipped with a
+# warning; the rest of the table keeps working.
+
+rules:
+  - category: "Sales of goods and services"
+    non_reconcilable: false
+    patterns:
+      - "INCOMING\\s*WIRE"
+      - "INCOMINGWIRE"
+
+  # DirectDeposit payroll into own account — no third-party receipt.
+  - category: "Sales of goods and services"
+    non_reconcilable: true
+    patterns:
+      - "DirectDeposit"
+
+  - category: "Internal transfer"
+    non_reconcilable: true
+    patterns:
+      - "USD\\s*TFR"
+      - "USDTFR"
+      - "\\[FX\\]USD"
+      - "US\\$\\s*Transfer"
+
+  # Interest EARNED / interest credits -> non-operating income.
+  - category: "All other revenues"
+    non_reconcilable: true
+    patterns:
+      - "INTEREST\\s*EARNED"
+      - "INTERESTEARNED"
+      - "\\[IN\\]"
+
+  - category: "Income tax and GST/HST remittance"
+    non_reconcilable: false
+    patterns:
+      - "CANACT"
+      - "TXINS"
+      - "GST-P"
+      - "CRA\\b"
+
+  # Fees + interest PAID -> operating expense.
+  #
+  # The money-transfer fee wordings below are deliberately NARROW. A bare
+  # `\bFEE\b` would swallow "Sent money to Contractor A (fee: F CUR)" — the
+  # contractor payment itself, whose description merely *mentions* the
+  # fee that the processor bills as a separate row. That row is a sub-contract
+  # cost, not a bank charge, so every fee pattern here requires either the word
+  # CHARGE(S) or FEE adjacent to the processor name / a "for:" reference.
+  - category: "Interest and bank charges"
+    non_reconcilable: true
+    patterns:
+      - "MONTHLY\\s*FEE"
+      - "CASH\\s*MGMT"
+      - "TRANSACTION\\s*FEE"
+      - "TRANSACTIONFEE"
+      - "CHEQUE\\s*\\d+\\s*AT\\s*\\$"
+      - "\\[SC\\]"
+      - "\\[DC\\]BR"
+      - "ReturnedItemFee"
+      - "RETURNED\\s*ITEM"
+      - "DepositContents"
+      - "DEPOSIT\\s*CONTENTS"
+      - "INTEREST\\s+PURCHASES"
+      - "InterestPaid"
+      - "INTERACe-TransferFee"
+      - "INTERAC.*TRANSFER.*FEE"
+      - "ChequeReturnedNSF"
+      # Wise bills its transfer fee as its own statement row:
+      # "Wise Charges for: TRANSFER-00000000". Matched BEFORE the
+      # "WISE TRANSFER" sub-contract pattern further down because this list
+      # is first-match-wins and this group is earlier.
+      - "\\bWISE\\s+CHARGE"              # Wise Charges for: / Wise charged …
+      - "\\bCHARGES\\s+FOR\\s*:"         # "… Charges for: TRANSFER-…", any prefix
+      - "\\bWISE\\s+(?:\\w+\\s+)?FEE\\b" # Wise fee: … / Wise transfer fee
+      - "\\bFEE\\s+FOR\\s*:"             # "Fee for: TRANSFER-…"
+
+  - category: "Internal transfer"
+    non_reconcilable: true
+    patterns:
+      # "Transfer," followed by the counterpart account number: digits and
+      # separators, grouped differently by institution.
+      - "^Transfer,[\\d-]{6,}"
+      - "ABMDeposit"
+      - "ABM\\s*Deposit"
+      # Moves to/from the user's own savings account are not income/expense.
+      - "TRANSFER\\s*(FROM|TO)\\s*SAVINGS"
+      - "TFR\\s*(FROM|TO)\\s*SAV"
+
+  # Travel rule split: fuel/parking/vehicle -> Motor vehicle; insurance -> Insurance.
+  # Generic keywords first, then a couple of fuel-brand examples.
+  - category: "Motor vehicle expenses"
+    non_reconcilable: false
+    patterns:
+      - "\\bFUEL\\b"
+      - "GAS\\s*STATION"
+      - "VEHICLE"
+      - "PARKING"
+      - "\\bESSO\\b"
+      - "\\bPETRO"
+      - "\\bSHELL\\b"
+      - "\\bCHEVRON\\b"
+
+  - category: "Insurance"
+    non_reconcilable: false
+    patterns:
+      - "INSURANCE\\s*PREMIUM"
+      - "INSURANCE"
+
+  - category: "Credit card payment"
+    non_reconcilable: true
+    patterns:
+      - "OnlineTransfer.*TF\\d+"
+      - "\\[CW\\]\\s*TF\\s*\\d+"
+      - "TRSF\\s*FROM"
+
+  # Office IT rule split: telecom -> Utilities; software -> Software and IT.
+  # Keyword first, carrier name second: one generic word covers every carrier,
+  # and a named carrier is only needed when its statement line omits the word.
+  - category: "Utilities and telephone/telecommunication"
+    non_reconcilable: false
+    patterns:
+      - "\\bTELECOM\\b"
+      - "\\bWIRELESS\\b"
+      - "\\bMOBILE\\b"
+      - "\\bHYDRO\\b"
+      # A named carrier, for the lines that run the name together with a service
+      # code and so carry no separate word to match.
+      - "ORCHID\\s*TELECOM"
+
+  - category: "Software and IT"
+    non_reconcilable: false
+    patterns:
+      - "GOOGLE.*GSUITE"
+      - "JETBRAINS"
+      - "ADOBE"
+
+  - category: "Software and IT"
+    non_reconcilable: false
+    patterns:
+      - "OPENAI"
+      - "AWS"
+      - "AMAZON\\s*WEB\\s*SERVICE"
+      - "GOOGLE\\s*AI"
+      - "MIDJOURNEY"
+      - "LINODE"
+
+  # Contractor/freelancer client-delivery payments -> cost of sales.
+  - category: "Purchases, materials and sub-contracts"
+    non_reconcilable: false
+    patterns:
+      - "WISE\\s*PAYMENTS"
+      - "WISEMSP"
+      - "WISE\\s*MSP"
+      - "INTERAC.*ETRNSFR.*FULFILL.*WISE"
+      - "WISE\\s*TRANSFER"
+      - "OUTGOING\\s*WIRE"
+      - "OUTGOINGWIRE"
+      - "PAYPALMSP"
+      - "PAYPAL\\s*MSP"
+      - "INTERAC.*TRANSFER.*SENT"
+      - "INTERACe-Transfer(?!Fee)"
+
+  - category: "Labour and commissions"
+    non_reconcilable: true
+    patterns:
+      - "Cheque.*NO\\."
+      - "\\[CK\\]NO\\."
+
+  # Big-box and marketplace retailers are mixed-use; default to Office supplies.
+  - category: "Office supplies"
+    non_reconcilable: false
+    patterns:
+      - "AMAZON"
+      - "\\bELECTRONICS\\b"
+      - "BEST\\s*BUY"
+      - "IKEA"
+
+  - category: "Refund/Credit"
+    non_reconcilable: false
+    patterns:
+      - "REFUND"
+      - "DISPUTE"
+
+  - category: "Purchases, materials and sub-contracts"
+    non_reconcilable: false
+    patterns:
+      - "UPWORK"
+      - "ODESK"
+
+  - category: "Office supplies"
+    non_reconcilable: false
+    patterns:
+      - "OFFICE\\s*SUPPL"
+      - "STATIONERY"
+      - "STAPLES"
+
+  - category: "Other indirect expenses"
+    non_reconcilable: false
+    patterns:
+      - "CLEANING"
+      - "JANITORIAL"
+
+  - category: "Software and IT"
+    non_reconcilable: false
+    patterns:
+      - "ANTHROPIC"
+      - "GEMINI"
+      - "CLAUDE"
+      - "CURSOR"
+
+  - category: "Advertising and promotion"
+    non_reconcilable: false
+    patterns:
+      - "MAILCHIMP"
+      - "SQUARESPACE"
+      - "WIXSITE"
+      - "META\\s*ADS"

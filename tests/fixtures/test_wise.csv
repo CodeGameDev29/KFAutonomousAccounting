@@ -1,0 +1,6 @@
+ID,Status,Direction,Created on,Finished on,Source amount,Source currency,Target amount,Target currency,Exchange rate,Fee,Reference
+50000001,COMPLETED,DEBIT,2026-01-12 09:00:00,2026-01-12 09:06:00,1800.00,USD,1800.00,USD,1.0,9.00,Contractor payment Jordan Avery
+50000002,COMPLETED,CREDIT,2026-01-19 15:20:00,2026-01-19 15:24:00,2400.00,USD,2400.00,USD,1.0,0.00,Client payment Northwind Trading
+50000003,COMPLETED,DEBIT,2026-01-26 11:00:00,2026-01-26 11:07:00,1000.00,CAD,740.00,USD,0.74,4.50,Transfer to USD chequing
+50000004,PENDING,DEBIT,2026-01-28 08:00:00,,250.00,CAD,,,,,Pending transfer
+50000005,CANCELLED,DEBIT,2026-01-29 08:00:00,,120.00,CAD,,,,,Cancelled transfer

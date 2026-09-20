@@ -1,0 +1,91 @@
+# Canonical vendor aliases: normalized description regex -> stable vendor key.
+#
+# Phase 2 of categorization scrubs a raw transaction description (reference
+# numbers, dates, city and legal-form noise, payment-processor prefixes), keeps
+# the first few meaningful tokens, lowercases them, and matches the result
+# against the patterns below. The first match wins and its `key` becomes the
+# transaction's vendor_key, which is how rows from the same merchant end up in
+# one cluster and get one categorization decision.
+#
+# Because the text being matched is already normalized, patterns here are
+# lowercase, anchored with `^`, and use `[_\s]*` where the raw description may
+# have had a space, an underscore or nothing at all.
+#
+# The `key` is a stable identifier, not a display name: keep it short, lowercase
+# and snake_case. Two patterns may share a key on purpose (that is how a set of
+# fuel stations collapses into one `fuel_station` cluster).
+#
+# Every pattern is compiled case-insensitively. A description that matches
+# nothing here still clusters — it falls back to a slug of its first one or two
+# tokens — so this table is an accuracy aid, not a requirement. The merchants
+# below are EXAMPLES of the shape an entry takes; delete the ones you never buy
+# from and add the ones you do as they show up in your own runs.
+#
+# Loaded by config/data_files.py. If this file is missing, every description
+# takes the slug fallback. A pattern that will not compile is skipped with a
+# warning; the rest of the table keeps working.
+
+aliases:
+  - pattern: "^(amzn|amazon[_\\s]*mkt|amazon[_\\s]*ca|amazon[_\\s]*com|amzn[_\\s]*mktp|amazonca|amazon)\\b"
+    key: "amazon"
+  - pattern: "^(aws|amazon[_\\s]*web[_\\s]*service)s?\\b"
+    key: "aws"
+  - pattern: "^(wise[_\\s]*pmts?|wise[_\\s]*payments?|wise[_\\s]*transfer|wise[_\\s]*msp|wisemsp|wise)\\b"
+    key: "wise"
+  - pattern: "^(paypal[_\\s]*msp|paypalmsp|paypal)\\b"
+    key: "paypal"
+  - pattern: "^(stripe[_\\s]*payment|stripe)\\b"
+    key: "stripe"
+  - pattern: "^(google[_\\s]*gsuite|google[_\\s]*workspace|google[_\\s]*svcs|google[_\\s]*cloud|google)\\b"
+    key: "google"
+  - pattern: "^(apple[_\\s]*com[_\\s]*bill|apple[_\\s]*services|apple)\\b"
+    key: "apple"
+  - pattern: "^(openai|chatgpt)\\b"
+    key: "openai"
+  - pattern: "^(anthropic|claude)\\b"
+    key: "anthropic"
+  - pattern: "^(gemini|google[_\\s]*ai)\\b"
+    key: "gemini"
+  - pattern: "^(cursor[_\\s]*ai|cursor)\\b"
+    key: "cursor"
+  - pattern: "^(jetbrains)\\b"
+    key: "jetbrains"
+  - pattern: "^(github)\\b"
+    key: "github"
+  - pattern: "^(microsoft|msft|msbill)\\b"
+    key: "microsoft"
+  - pattern: "^(adobe)\\b"
+    key: "adobe"
+  - pattern: "^(netflix)\\b"
+    key: "netflix"
+  - pattern: "^(spotify)\\b"
+    key: "spotify"
+  - pattern: "^(uber[_\\s]*eats|ubereats)\\b"
+    key: "uber_eats"
+  - pattern: "^(uber[_\\s]*canada|uber)\\b"
+    key: "uber"
+  - pattern: "^(lyft)\\b"
+    key: "lyft"
+  # One key, many merchants: every fuel brand clusters as one vendor, and so
+  # does anything whose line just says "fuel" or "gas station".
+  - pattern: "^(shell|esso|petro[_\\s]*canada|chevron|mobil|fuel|gas[_\\s]*station)\\b"
+    key: "fuel_station"
+  - pattern: "^(best[_\\s]*buy|bestbuy)\\b"
+    key: "best_buy"
+  - pattern: "^(staples)\\b"
+    key: "staples"
+  - pattern: "^(ikea)\\b"
+    key: "ikea"
+  # A telecom bill prints the carrier's name with a service suffix that varies
+  # month to month ("ORCHID TELECOM BPY/FAC", "ORCHIDTELECOMBPY"); `[_\s]*`
+  # absorbs the separator so both spellings land on one key.
+  - pattern: "^(orchid[_\\s]*telecom)\\b"
+    key: "orchid_telecom"
+  - pattern: "^(upwork|odesk)\\b"
+    key: "upwork"
+  - pattern: "^(epic[_\\s]*games|epicgames)\\b"
+    key: "epic_games"
+  - pattern: "^(squarespace)\\b"
+    key: "squarespace"
+  - pattern: "^(mailchimp)\\b"
+    key: "mailchimp"

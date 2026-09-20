@@ -1,0 +1,101 @@
+# Web framework
+fastapi==0.135.1
+uvicorn[standard]==0.42.0
+
+# OpenAI
+openai==2.29.0
+
+# Google Gemini
+google-genai==1.68.0
+
+# Excel handling
+openpyxl==3.1.5
+
+# Word document handling (receipts/invoices uploaded as .docx)
+python-docx==1.2.0
+
+# PDF processing
+pdfplumber==0.11.9
+PyMuPDF==1.27.2.2
+
+# PDF generation (reports)
+reportlab==4.4.10
+
+# HTML templating (binder report)
+Jinja2==3.1.6
+
+# Image processing
+Pillow==12.2.0
+
+# Data validation
+pydantic==2.12.5
+
+# Configuration
+python-dotenv==1.2.2
+PyYAML==6.0.3
+
+# HTML parsing. Nothing in this tree imports it today; pinned so the version is
+# fixed if something starts to.
+beautifulsoup4==4.13.4
+
+# String matching
+rapidfuzz==3.14.3
+
+# Optimization (Hungarian algorithm for GST/HST matching)
+scipy==1.15.3
+
+# Database (PostgreSQL driver; SQLite is in the standard library)
+psycopg2-binary==2.9.11
+
+# Auth (local JWT issuing + verification — server/local_auth.py, server/auth.py)
+PyJWT[crypto]==2.12.1
+
+# bcrypt: verifies password hashes imported in bcrypt format (see
+# server/local_auth.py); new hashes are PBKDF2 from the standard library.
+bcrypt==5.0.0
+
+# Encryption (credential storage)
+cryptography==46.0.7
+
+# Gather phase integrations
+google-auth-oauthlib==1.3.0
+google-api-python-client==2.193.0
+
+# Retry with exponential backoff
+tenacity==9.1.4
+
+# Testing
+pytest==9.0.3
+pytest-asyncio==1.3.0
+pytest-cov==7.1.0
+
+# HTTP client (used by tests and API integrations)
+httpx==0.28.1
+
+# Transitive pins for CVE remediation (pulled in by google/rich/pytest)
+requests==2.33.0
+Pygments==2.20.0
+aiohttp==3.13.4
+
+# SSL certificates
+certifi==2026.2.25
+
+# File system monitoring (gather module)
+watchdog==6.0.0
+
+# WebSocket support
+websockets==15.0.1
+
+# Multipart form parsing (FastAPI file uploads)
+python-multipart==0.0.26
+
+# Rate limiting
+slowapi==0.1.9
+
+# No error-tracking, analytics, payment, email-delivery or bank-aggregation
+# SDK is pinned: the application calls no hosted service of those kinds. The
+# log files it writes are the only telemetry it produces.
+
+# Linting (dev)
+ruff==0.11.11
+

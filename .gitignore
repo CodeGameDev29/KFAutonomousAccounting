@@ -1,0 +1,38 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node / frontend build
+node_modules/
+web/dist/
+*.tsbuildinfo
+
+# Runtime data and generated output.
+# Every pattern here is anchored to the repository root with a leading slash:
+# unanchored names match at any depth and would swallow source directories such
+# as web/src/components/reports/ and core/gather/.
+*.log
+/logs/
+/uploads/
+/data/
+/exports/
+/renamed/
+/gather/
+/reports/
+*.sqlite*
+*.db
+
+# Large derived reference data (see scripts/ingest_ised_benchmarks.py)
+config/ised_benchmarks.json
+
+# Tooling / editors
+.idea/
+.vscode/

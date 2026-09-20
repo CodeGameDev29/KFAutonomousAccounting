@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Autonomous Accounting">
+  <rect x="0" y="0" width="256" height="256" rx="56" fill="#1A1F4A"/>
+  <g fill="none" stroke="#F7F4EE" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 76 206 L 128 50 L 180 206"/>
+    <path d="M 92 156 L 164 156"/>
+  </g>
+  <line x1="68" y1="228" x2="188" y2="228" stroke="#1F8A7A" stroke-width="14" stroke-linecap="round"/>
+</svg>

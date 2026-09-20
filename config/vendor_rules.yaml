@@ -1,0 +1,77 @@
+# EXAMPLE FILE — every entry below is made up.
+#
+# This is where you put YOUR OWN clients and vendors: the names that only appear
+# in your books and that no generic rule could know about. Nothing here is
+# required. The engine works with this file empty, or deleted entirely — these
+# rules only add determinism, letting a known name be decided by a rule instead
+# of by the LLM. Leaving the examples as they are is safe too: no real
+# transaction will match "EXAMPLE CLIENT CO".
+#
+# One place in the shipped engine reads this file:
+#   * core/reconciliation.py `_known_vendor_patterns()` — compiles every
+#     `vendor_pattern` so the matcher can tell "this bank line names a merchant
+#     I have a rule about" from "this bank line names nobody".
+#
+# `rules:` entry fields (models/vendor_rule.py):
+#   vendor_pattern  regex, matched case-insensitively. A plain name is a valid
+#                   regex, so "EXAMPLE CLIENT CO" works as-is.
+#   category        MUST be one of the canonical names in
+#                   config/ised_categories.py. Anything else is not a category
+#                   and will be rejected downstream.
+#   priority        integer, default 50. Higher wins when two patterns match.
+#   source          "manual" (you wrote it) or "learned" (the app inferred it).
+#
+# A missing file is tolerated silently; an unparseable one logs a warning and
+# the engine carries on with no vendor rules.
+
+rules:
+  # ── Income: your clients ───────────────────────────────────────────────────
+  # Bank lines for client payments are usually the client's name plus a
+  # reference number, so anchor on the name and let the rest float.
+  - vendor_pattern: "EXAMPLE CLIENT CO"
+    category: "Sales of goods and services"
+    priority: 100
+    source: manual
+
+  - vendor_pattern: "SAMPLE STUDIOS (LTD|INC)?"
+    category: "Sales of goods and services"
+    priority: 100
+    source: manual
+
+  # ── Cost of sales: the people you pay to deliver client work ───────────────
+  - vendor_pattern: "EXAMPLE CONTRACTOR"
+    category: "Purchases, materials and sub-contracts"
+    priority: 90
+    source: manual
+
+  # ── Expenses: well-known merchants, if you want them decided by rule ───────
+  - vendor_pattern: "GITHUB"
+    category: "Software and IT"
+    priority: 60
+    source: manual
+
+  - vendor_pattern: "STAPLES"
+    category: "Office supplies"
+    priority: 60
+    source: manual
+
+# ── Optional extras ──────────────────────────────────────────────────────────
+# The three keys below are part of this file's schema and are safe to fill in or
+# to leave empty. No module reads them today — the loaders above take `rules:`
+# only — so treat them as notes to yourself rather than as behaviour.
+
+# Labelled groups of regexes, for your own bookkeeping notes.
+category_patterns: {}
+#   recurring_subscriptions:
+#     - "MONTHLY\\s*SUBSCRIPTION"
+#     - "ANNUAL\\s*PLAN"
+
+# Vendors you know bill in USD even when the statement line looks domestic.
+usd_billing_vendors: []
+#   - "EXAMPLE SAAS INC"
+
+# Extra words that mean the same vendor, keyed by the vendor's main word.
+vendor_aliases: {}
+#   example_client:
+#     - "EXAMPLE CLIENT"
+#     - "EXAMPLECLIENTCO"

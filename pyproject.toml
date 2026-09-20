@@ -1,0 +1,17 @@
+[project]
+# Copyright (C) 2026 Autonomous Accounting contributors
+name = "autonomous-accounting"
+version = "0.1.0"
+description = "Self-hosted AI bookkeeping for a small business"
+authors = [{ name = "Autonomous Accounting contributors" }]
+license = "AGPL-3.0-only"
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.coverage.run]
+source = ["core", "models", "db"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80

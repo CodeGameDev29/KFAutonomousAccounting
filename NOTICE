@@ -1,0 +1,152 @@
+Autonomous Accounting
+Copyright (C) 2026 Autonomous Accounting contributors
+
+This product includes software and data developed by third parties. The
+entries below cover code that is vendored into this repository, code this
+repository is derived from, and data the project downloads at setup time.
+Every licence named here was read from the dependency's own metadata
+(`*.dist-info/METADATA`, `node_modules/<pkg>/package.json`), from the header of
+the vendored file itself, or from the publisher's licence record.
+
+Ordinary dependencies that are merely installed, not vendored, are pinned in
+`requirements.txt` and `web/package.json` and carry their own licences; they are
+not reproduced here. Two of them are listed anyway because their licences place
+obligations on anyone redistributing this project.
+
+
+-------------------------------------------------------------------------------
+PyMuPDF (pymupdf) 1.27.2.2 — Artifex Software, Inc.
+-------------------------------------------------------------------------------
+Dual licensed: GNU Affero General Public License v3.0, or a commercial licence
+from Artifex Software, Inc. (<support@artifex.com>).
+
+Verified from the package metadata:
+  License: Dual Licensed - GNU AFFERO GPL 3.0 or Artifex Commercial License
+
+Autonomous Accounting is distributed under AGPL-3.0-only, which is compatible
+with PyMuPDF's AGPL option. Used for rasterising PDF pages before they are sent
+to the vision model (`core/extraction.py`, `core/llm_statement_parser.py`).
+If you redistribute a derived work under terms other than the AGPL, you need a
+commercial licence from Artifex for PyMuPDF.
+
+
+-------------------------------------------------------------------------------
+psycopg2-binary 2.9.11 — Federico Di Gregorio and the psycopg contributors
+-------------------------------------------------------------------------------
+GNU Lesser General Public License, version 3 or later, with the OpenSSL linking
+exception reproduced in the package's own LICENSE file:
+
+  "In addition, as a special exception, the copyright holders give permission
+   to link this program with the OpenSSL library (or with modified versions of
+   OpenSSL that use the same license as OpenSSL), and distribute linked
+   combinations including the two."
+
+The `-binary` wheel bundles its own build of libpq and OpenSSL. Used as the
+PostgreSQL driver (`db/connection.py`, `db/database_pg.py`).
+
+
+-------------------------------------------------------------------------------
+shadcn/ui — Copyright (c) 2023 shadcn — MIT License
+-------------------------------------------------------------------------------
+The components under `web/src/components/ui/` are copied from, or derived from,
+shadcn/ui (<https://ui.shadcn.com>). shadcn/ui is distributed as source you copy
+into your own project rather than as a package, so these files carry no upstream
+header; the attribution lives here instead.
+
+Derived files: alert-dialog.tsx, avatar.tsx, badge.tsx, button.tsx,
+calendar.tsx, card.tsx, dialog.tsx, dropdown-menu.tsx, input.tsx, label.tsx,
+popover.tsx, scroll-area.tsx, select.tsx, separator.tsx, sheet.tsx, sidebar.tsx,
+skeleton.tsx, tabs.tsx, tooltip.tsx. (`confidence-indicator.tsx` and
+`ConfidenceEducationPopover.tsx` in the same directory are this project's own
+code, written in the same style.)
+
+  MIT License
+
+  Copyright (c) 2023 shadcn
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+Those components are built on npm packages that remain ordinary dependencies,
+with the licences declared in their own `node_modules/<pkg>/package.json`:
+Radix UI primitives (MIT), class-variance-authority 0.7.1 (Apache-2.0),
+lucide-react 0.460.0 (ISC), clsx (MIT), tailwind-merge (MIT),
+react-day-picker (MIT), sonner (MIT).
+
+
+-------------------------------------------------------------------------------
+unDraw — illustration style
+-------------------------------------------------------------------------------
+`web/src/components/dashboard/EmptyState.tsx` contains a small inline SVG whose
+comment reads "inspired by unDraw". The SVG is this project's own drawing —
+shapes and colours written by hand in that file — and no unDraw asset is
+copied or distributed here. Recorded for completeness because the comment names
+the source of the visual idea.
+
+
+-------------------------------------------------------------------------------
+Financial Performance Data — Innovation, Science and Economic Development
+Canada / Statistics Canada — Open Government Licence – Canada
+-------------------------------------------------------------------------------
+The peer-benchmark ("reasonableness") engine reads a benchmark table that is
+built locally, by running `scripts/ingest_ised_benchmarks.py` against the
+Financial Performance Data (FPD) release published on the Government of Canada
+Open Government Portal. (Run with `--seed-only`, the same
+script writes a small table of invented example figures instead, which carries
+no attribution because it contains no licensed data.)
+
+  Dataset:  Financial Performance Data (2024)
+  Publisher: Innovation, Science and Economic Development Canada
+  Licence:  Open Government Licence - Canada (`ca-ogl-lgo`)
+            https://open.canada.ca/en/open-government-licence-canada
+
+Verified against the portal's own record for the dataset the ingest script
+names (`scripts/ingest_ised_benchmarks.py`, CKAN dataset
+`3f9e1080-4a08-4c0f-ace7-1b94a1afd61d`).
+
+No Open Government Licence data file is distributed with this repository.
+`scripts/ingest_ised_benchmarks.py` downloads the release when it is run, and
+transforms it into `config/ised_benchmarks.json`, which is git-ignored.
+That generated file and every report built from it carry the attribution the
+licence requires:
+
+  "Contains information licensed under the Open Government Licence – Canada.
+   Source: ISED/StatCan Financial Performance Data."
+
+The two benchmark files that *are* committed —
+`tests/fixtures/ised_benchmarks_sample.json` and
+`tests/fixtures/ised_benchmarks_cohorts_sample.json` — contain no FPD data.
+Both are written by `scripts/gen_fixtures.py`, both have the same JSON shape as
+the generated table, and every figure in them is invented. They carry no
+attribution, because there is nothing in them to attribute.
+
+
+-------------------------------------------------------------------------------
+Web fonts — none
+-------------------------------------------------------------------------------
+No font file is distributed with this repository and none is fetched. The app
+renders in the system font stack, so a browser loading it makes no third-party
+request at all, and the Content-Security-Policy in `server/app.py` allows no
+external font or stylesheet origin.
+
+
+-------------------------------------------------------------------------------
+Everything else
+-------------------------------------------------------------------------------
+All other source files in this repository are part of Autonomous Accounting and
+are licensed under the GNU Affero General Public License v3.0 only. See LICENSE.
