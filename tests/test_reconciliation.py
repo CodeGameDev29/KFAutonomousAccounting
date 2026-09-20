@@ -708,3 +708,41 @@ class TestCallbackExceptionSafety:
                 "the reporting wrapper is not exception-safe"
             )
         assert len(results) == 1
+
+
+class TestAuditLogDirectory:
+    """Where the per-run audit JSON lands when ``RECON_LOG_DIR`` is left empty.
+
+    ``.env.example`` ships the key empty and documents that as "use
+    ./logs/reconciliation". ``Path("")`` is the current directory, so reading
+    the variable with a plain ``get`` default wrote a file of the run's
+    transactions into the checkout root, where nothing in .gitignore covers it.
+    """
+
+    @pytest.mark.parametrize("value", ["", "   "])
+    def test_an_empty_value_means_the_default_directory(self, monkeypatch, value):
+        import importlib
+        from pathlib import Path
+
+        import core.reconciliation as recon
+
+        monkeypatch.setenv("RECON_LOG_DIR", value)
+        try:
+            reloaded = importlib.reload(recon)
+            expected = Path(reloaded.__file__).resolve().parent.parent / "logs" / "reconciliation"
+            assert reloaded._RECON_LOG_DIR == expected
+        finally:
+            monkeypatch.undo()
+            importlib.reload(recon)
+
+    def test_a_set_value_is_used(self, monkeypatch, tmp_path):
+        import importlib
+
+        import core.reconciliation as recon
+
+        monkeypatch.setenv("RECON_LOG_DIR", str(tmp_path))
+        try:
+            assert importlib.reload(recon)._RECON_LOG_DIR == tmp_path
+        finally:
+            monkeypatch.undo()
+            importlib.reload(recon)

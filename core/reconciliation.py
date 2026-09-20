@@ -53,10 +53,13 @@ logger = logging.getLogger(__name__)
 # run. Nothing reads these files back: they exist so a run's decisions can be
 # inspected without re-running it.
 
-_RECON_LOG_DIR = Path(os.environ.get(
-    "RECON_LOG_DIR",
-    Path(__file__).resolve().parent.parent / "logs" / "reconciliation",
-))
+# ``or``, not a ``get`` default: .env.example ships ``RECON_LOG_DIR=`` empty, and
+# ``Path("")`` is the current directory — which would drop a file holding the
+# run's transactions into the checkout, outside everything .gitignore covers.
+_RECON_LOG_DIR = Path(
+    os.environ.get("RECON_LOG_DIR", "").strip()
+    or Path(__file__).resolve().parent.parent / "logs" / "reconciliation"
+)
 
 
 class _ReconAuditLogger:
