@@ -1,0 +1,6 @@
+reports/
+screenshots/
+runs/
+progress.json
+*.log
+__pycache__/

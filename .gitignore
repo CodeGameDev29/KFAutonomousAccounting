@@ -33,6 +33,22 @@ web/dist/
 # Large derived reference data (see scripts/ingest_ised_benchmarks.py)
 config/ised_benchmarks.json
 
+# Per-run reconciliation audit logs hold the run's transactions. They belong in
+# /logs/ (RECON_LOG_DIR); this catches one written to the checkout root anyway.
+/recon_*.json
+
 # Tooling / editors
 .idea/
 .vscode/
+
+# Agent harness: the shared definition under .claude/ is tracked; what a
+# session or a run produces is not. Browser-automation snapshots and skill run
+# output are screenshots and dumps of whatever books the app was showing.
+.claude/settings.local.json
+.claude/*.lock
+.claude/skills/**/runs/
+.claude/skills/**/reports/
+.claude/skills/**/screenshots/
+.claude/skills/**/progress.json
+.claude/skills/**/node_modules/
+.playwright-mcp/

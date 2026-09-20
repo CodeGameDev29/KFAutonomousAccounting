@@ -51,3 +51,16 @@ opened without a guard, so it must be present). Record shapes, status
 vocabularies, taxonomy and the accepted CSV format: `docs/data-schema.md`. Every
 environment variable with a default: `.env.example`. Licence AGPL-3.0-only (`LICENSE`),
 attributions (`NOTICE`), export provenance (`docs/release-provenance.md`).
+
+## The agent harness
+
+`.claude/` is a shared, tracked harness; `.claude/README.md` says what each part does and
+how to switch it off. In short: three fail-soft hooks (a session-start orientation, a
+reminder that fires the relevant rule when a prompt heads toward it, and a post-edit
+guardrail for secrets, telemetry, schema and test discipline), the `/gates` and `/status`
+commands, an `executor` agent, skills under `.claude/skills/` (catalog in `SKILLS.md`,
+authoring contract in `AUTHORING.md`), and three project notes worth reading before
+non-trivial work: `.claude/project/VERIFICATION.md` (what counts as proof),
+`DOMAIN.md` (the accounting facts the engine must get right) and `LESSONS.md` (checks
+to run before claiming done). `settings.json` denies agent reads of `.env`, `data/` and
+`logs/` on purpose: on a real install those hold secrets and someone's books.

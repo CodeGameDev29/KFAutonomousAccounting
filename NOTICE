@@ -46,6 +46,18 @@ PostgreSQL driver (`db/connection.py`, `db/database_pg.py`).
 
 
 -------------------------------------------------------------------------------
+frontend-design skill — Copyright Anthropic, PBC — Apache License 2.0
+-------------------------------------------------------------------------------
+`.claude/skills/frontend-design/SKILL.md` is derived from the `frontend-design`
+skill published by Anthropic (<https://github.com/anthropics/skills>) under the
+Apache License, Version 2.0; the licence text travels with it as
+`.claude/skills/frontend-design/LICENSE.txt`. The file has been modified: it is
+restructured to this repository's skill-authoring contract and adds
+project-specific constraints (system font stack, no third-party fetches). It is
+agent tooling only and is not part of the application.
+
+
+-------------------------------------------------------------------------------
 shadcn/ui — Copyright (c) 2023 shadcn — MIT License
 -------------------------------------------------------------------------------
 The components under `web/src/components/ui/` are copied from, or derived from,

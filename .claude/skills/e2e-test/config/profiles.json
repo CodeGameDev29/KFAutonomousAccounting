@@ -1,0 +1,59 @@
+{
+  "account": {
+    "base_url_env": "AA_E2E_BASE_URL",
+    "default_base_url": "http://localhost:8080",
+    "email_env": "AA_E2E_EMAIL",
+    "password_env": "AA_E2E_PASSWORD",
+    "note": "There is no default account. Registration is closed by default (AUTH_ALLOW_SIGNUP=0), so every persona drives the one throwaway account these variables name, and its data is reset between personas. The account must hold synthetic data only: the suite uploads, mutates and deletes everything in it."
+  },
+  "profiles": [
+    {
+      "name": "basic",
+      "description": "Basic small biz owner — CSV upload, quick reconcile, minimal config",
+      "journey_file": "journeys/journey-basic.md",
+      "focus": "Quick CSV upload → match → bulk approve → report"
+    },
+    {
+      "name": "full",
+      "description": "Power user — individual review, corrections, shared reports",
+      "journey_file": "journeys/journey-full.md",
+      "focus": "Integration cards say what they are, review matches one by one, share and revoke a report"
+    },
+    {
+      "name": "manual",
+      "description": "Privacy-first skeptic — no integrations, manual uploads only, error paths",
+      "journey_file": "journeys/journey-manual.md",
+      "focus": "Refused files, CSV and PDF statements, manual match, no third-party requests"
+    },
+    {
+      "name": "bookkeeper",
+      "description": "Bookkeeper — CRA record-keeping focus, every export, month close, audit trail",
+      "journey_file": "journeys/journey-bookkeeper.md",
+      "focus": "PDF / ZIP / QuickBooks / Xero exports, tax summary, month close, audit log"
+    }
+  ],
+  "cross_cutting_journeys": [
+    {
+      "name": "functionality-completeness",
+      "journey_file": "journeys/journey-functionality-completeness.md",
+      "description": "Closes the gaps the persona journeys leave — public routes, auth deep dive, transaction filters and panel tools, Analytics, Activity, Settings, dashboard widgets, error and empty states, small screens, keyboard access, live updates. Runs after the basic persona so populated data exists.",
+      "always_run": true,
+      "order": 1
+    },
+    {
+      "name": "security",
+      "journey_file": "journeys/journey-security.md",
+      "description": "Auth enforcement, per-user data filtering, what errors reveal, injection, session persistence, rate limiting. Runs last: its rate-limit phase locks sign-in for a minute.",
+      "always_run": true,
+      "order": 2
+    }
+  ],
+  "api_suites": [
+    "auth",
+    "onboarding",
+    "data_ingestion",
+    "reconciliation",
+    "reports",
+    "security"
+  ]
+}
