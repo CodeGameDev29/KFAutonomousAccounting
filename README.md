@@ -24,7 +24,7 @@ your books anywhere but your own disk.
 
 ## See it work
 
-Three minutes: one invented company's January, from eight documents and a bank CSV to a
+Two minutes twenty: one invented company's January, from eight documents and a bank CSV to a
 downloadable audit binder.
 
 <p align="center">
@@ -36,7 +36,7 @@ downloadable audit binder.
     <img src="docs/media/video-poster.png" alt="Play the full demo video: eight documents, one reconciled month (2 min 20 s)" width="72%">
   </a>
   <br>
-  <b><a href="docs/media/demo.mp4">▶ Watch the full demo (2:20, captioned, no sound)</a></b>
+  <b><a href="docs/media/demo.mp4">Watch the full demo (2:20, captioned, no sound)</a></b>
 </p>
 
 <!-- GitHub only plays a video inline from a user-attachments URL. To get an inline player here,
@@ -47,9 +47,8 @@ your machine — see [Try the demo month](#try-the-demo-month).</sub>
 
 ## What you get
 
-| | | |
-|---|---|---|
 | <img src="docs/media/screenshot-review.png" alt="Review dialog: a CAD bank line beside the USD invoice it was matched to, with the exchange-rate explanation"> | <img src="docs/media/screenshot-ledger.png" alt="January 2026 ledger with categories and match status per bank line"> | <img src="docs/media/screenshot-binder.png" alt="The audit binder's self-contained HTML report"> |
+|---|---|---|
 | **A review queue, not a black box.** Exact pairs approve themselves; date gaps and cross-currency pairs wait for you. | **A ledger with CRA/GIFI categories.** Monthly and annual, with a GST/HST/PST summary and QuickBooks- and Xero-style CSVs. | **An audit binder in one ZIP.** The XLSX workbook, a self-contained HTML report, and the document behind every line. |
 
 ## How it works
