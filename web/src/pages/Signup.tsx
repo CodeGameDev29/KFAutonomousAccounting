@@ -37,12 +37,18 @@ export function Signup() {
   // location, in case a crawler executes JS but halts before the navigation
   // completes. The H1 deliberately does not contain the string "404".
   useEffect(() => {
+    // Restored on unmount: this page only ever redirects, and without the
+    // restore every page reached through it kept "Sign up" in the tab.
+    const previousTitle = document.title;
     document.title = "Sign up — Autonomous Accounting";
     const meta = document.createElement("meta");
     meta.name = "robots";
     meta.content = "noindex, follow";
     document.head.appendChild(meta);
-    return () => { document.head.removeChild(meta); };
+    return () => {
+      document.title = previousTitle;
+      document.head.removeChild(meta);
+    };
   }, []);
 
   return (

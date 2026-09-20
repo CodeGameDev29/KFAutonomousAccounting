@@ -202,11 +202,11 @@ export function YearIndex() {
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
                     <span className="font-mono">{yr.months_with_data}</span>
-                    <span className="ml-1">months</span>
+                    <span className="ml-1">{yr.months_with_data === 1 ? "month" : "months"}</span>
                   </Badge>
                   <Badge variant="secondary">
                     <span className="font-mono">{yr.total_transactions}</span>
-                    <span className="ml-1">transactions</span>
+                    <span className="ml-1">{yr.total_transactions === 1 ? "transaction" : "transactions"}</span>
                   </Badge>
                   {yr.closed_months > 0 && (
                     <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/10">
