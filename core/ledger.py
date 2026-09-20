@@ -31,6 +31,7 @@ from openpyxl.worksheet.hyperlink import Hyperlink
 
 from config.ised_categories import gifi_for
 from core.gst_tax_code import xero_tax_code
+from core.spreadsheet_safety import SafeCsvWriter, neutralize_workbook_formulas
 from core.transfer_exclusion import is_transfer_category
 from models.ledger_entry import LedgerEntry
 from models.transaction import AccountType, Transaction, account_str
@@ -317,6 +318,7 @@ def export_ledger(
     generate_index_sheet(wb, sheet_names)
     generate_net_income_sheet(wb, monthly_totals)
 
+    neutralize_workbook_formulas(wb)
     wb.save(output_path)
 
 
@@ -329,7 +331,7 @@ def export_ledger_csv(
     All account sheets are combined into one CSV with an Account column.
     """
     with open(output_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = SafeCsvWriter(csv.writer(f))
         writer.writerow([
             "Account",
             "Transaction Type",
@@ -390,7 +392,7 @@ def export_transactions_csv(
         notes = {}
 
     with open(output_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
+        writer = SafeCsvWriter(csv.writer(f))
         writer.writerow([
             "Account Number",
             "Transaction Type",
@@ -471,7 +473,7 @@ def export_qbo_csv(
     file_currency = _single_currency(transactions)
 
     with open(output_path, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+        writer = SafeCsvWriter(csv.writer(f, quoting=csv.QUOTE_MINIMAL))
         writer.writerow(QBO_HEADERS)
 
         for txn in sorted(transactions, key=lambda t: t.date_posted):
@@ -540,7 +542,7 @@ def export_xero_csv(
     file_currency = _single_currency(transactions)
 
     with open(output_path, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_MINIMAL)
+        writer = SafeCsvWriter(csv.writer(f, quoting=csv.QUOTE_MINIMAL))
         writer.writerow(XERO_HEADERS)
 
         for txn in sorted(transactions, key=lambda t: t.date_posted):

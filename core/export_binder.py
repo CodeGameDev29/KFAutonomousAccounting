@@ -34,6 +34,7 @@ from core.html_binder import (
     binder_proof_counts,
     generate_html_report,
 )
+from core.spreadsheet_safety import neutralize_workbook_formulas
 from core.transfer_exclusion import is_transfer_category
 from models.transaction import TransactionStatus, account_str
 
@@ -733,6 +734,7 @@ def _build_xlsx(
 
     # Serialize
     xlsx_buf = io.BytesIO()
+    neutralize_workbook_formulas(wb)
     wb.save(xlsx_buf)
     xlsx_bytes = xlsx_buf.getvalue()
     xlsx_buf.close()

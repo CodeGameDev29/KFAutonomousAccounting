@@ -22,6 +22,7 @@ from core.categorization_agent.rule_prepass import (
     _auto_categorize_transactions,
     is_non_reconcilable,
 )
+from core.spreadsheet_safety import SafeCsvWriter
 from db.database_pg import DatabasePg
 from models.match import MatchStatus, ReconciliationMatch
 from server.access import require_verified_email
@@ -2781,7 +2782,7 @@ async def audit_log_export_csv(
 
     # Build CSV in memory
     output = io.StringIO()
-    writer = csv.writer(output)
+    writer = SafeCsvWriter(csv.writer(output))
     writer.writerow([
         "id", "entity_type", "entity_id", "action",
         "old_value", "new_value", "performed_by", "created_at",
