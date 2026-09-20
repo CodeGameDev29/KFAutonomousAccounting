@@ -111,6 +111,24 @@ def resolve_path(path: str) -> Path:
     return candidate
 
 
+def resolve_user_path(user_id: str, path: str) -> Path:
+    """``resolve_path``, additionally confined to one user's own directory.
+
+    A key that merely *starts with* ``{user_id}/`` is not proof of ownership:
+    ``alpha/../beta/202601/x.pdf`` has the right prefix, stays inside the
+    storage root, and resolves into another tenant's directory. Anything that
+    acts on a key a client supplied goes through here, so the check is made on
+    the resolved path rather than on the string.
+    """
+    if not (user_id or "").strip() or "/" in user_id or "\\" in user_id or user_id in {".", ".."}:
+        raise ValueError(f"invalid storage owner: {user_id!r}")
+    candidate = resolve_path(path)
+    user_root = (storage_root() / user_id).resolve()
+    if user_root not in candidate.parents:
+        raise ValueError(f"path escapes the owner's directory: {path!r}")
+    return candidate
+
+
 # -- Signed URLs ------------------------------------------------------
 
 def _sign(path: str, expires_at: int) -> str:
@@ -259,7 +277,8 @@ def get_upload_url(
 def list_user_files(user_id: str, prefix: str = "") -> list[dict]:
     """List a user's stored files as dicts of key/name/size/updated_at."""
     root = storage_root()
-    base = resolve_path(f"{user_id}/{prefix}" if prefix else user_id)
+    # A prefix is client-shaped input: "../other-user" must not list a neighbour.
+    base = resolve_user_path(user_id, f"{user_id}/{prefix}") if prefix else resolve_path(user_id)
     if not base.exists():
         return []
     out: list[dict] = []

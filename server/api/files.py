@@ -113,6 +113,19 @@ async def upload_file(
     }
 
 
+def _owned_by(user_id: str, key: str) -> bool:
+    """True iff ``key`` resolves inside ``user_id``'s own storage directory.
+
+    The ``startswith`` prefix check alone is not enough: ``me/../them/x.pdf``
+    carries the caller's prefix and resolves into another tenant's directory.
+    """
+    try:
+        file_storage.resolve_user_path(user_id, key)
+    except ValueError:
+        return False
+    return True
+
+
 @router.get("/download")
 async def download_file(
     key: str,
@@ -125,7 +138,7 @@ async def download_file(
     """
     # Security check: ensure the key belongs to this user
     expected_prefix = f"{user.id}/"
-    if not key.startswith(expected_prefix):
+    if not key.startswith(expected_prefix) or not _owned_by(user.id, key):
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Extract filename from key
@@ -145,7 +158,7 @@ async def delete_file(
 ):
     """Delete a file from storage."""
     expected_prefix = f"{user.id}/"
-    if not key.startswith(expected_prefix):
+    if not key.startswith(expected_prefix) or not _owned_by(user.id, key):
         raise HTTPException(status_code=403, detail="Access denied")
 
     success = file_storage.delete_file(key)
