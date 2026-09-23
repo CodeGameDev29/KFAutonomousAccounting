@@ -24,26 +24,18 @@ your books anywhere but your own disk.
 
 ## See it work
 
-Two minutes twenty: one invented company's January, from eight documents and a bank CSV to a
-downloadable audit binder.
+One invented company's January in a little over a minute: eight documents and a bank CSV go in,
+a reconciled ledger and a downloadable audit binder come out. Every frame is the real app driven
+by a script; the two stretches that wait on the model are sped up and say so on screen.
 
 <p align="center">
-  <img src="docs/media/demo-loop.gif" alt="The review queue: a USD invoice paired with a CAD bank line is flagged for a person, then approved." width="100%">
+  <img src="docs/media/demo-tour.gif" alt="A one-minute tour: the nine input files; a CSV statement parsed into bank lines; eight documents read by a vision model; Match Receipts auto-approving the exact pairs; a USD invoice paired with a CAD bank line, then a six-day date gap, each approved in Review; the ledger's export menu; and the audit binder's HTML report." width="100%">
 </p>
 
-<p align="center">
-  <a href="docs/media/demo.mp4">
-    <img src="docs/media/video-poster.png" alt="Play the full demo video: eight documents, one reconciled month (2 min 20 s)" width="72%">
-  </a>
-  <br>
-  <b><a href="docs/media/demo.mp4">Watch the full demo (2:20, captioned, no sound)</a></b>
-</p>
-
-<!-- GitHub only plays a video inline from a user-attachments URL. To get an inline player here,
-     edit this file on github.com and drag docs/media/demo.mp4 onto this line. -->
-
-<sub>Everything shown is synthetic. `python scripts/gen_demo_data.py` writes the same month on
-your machine — see [Try the demo month](#try-the-demo-month).</sub>
+<sub>In order: the inputs → the statement parses → extraction → **Match Receipts** → the two
+pairs that needed a person, approved in **Review** → the ledger's export menu → the audit
+binder. Everything shown is synthetic. `python scripts/gen_demo_data.py` writes the same month
+on your machine — see [Try the demo month](#try-the-demo-month).</sub>
 
 ## What you get
 
